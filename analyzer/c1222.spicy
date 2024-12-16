@@ -1,0 +1,995 @@
+module C1222;
+
+# Copyright 2024 Battelle Energy Alliance, LLC
+
+################################################################################
+##
+## ICSNPP - ANS1 C12.22
+## 
+## This file defines the ICSNPP ANS1 C12.22 Parser as defined in the specification
+## IEEE Std 1703-2012, IEEE Standard for Local Area Network/Wide Area Network 
+## (LAN/WAN) Node Communication Protocol to Complement the Utility Industry 
+## End Device Data Tables.
+##
+## Payton Harmon, Idaho National Lab,  2024
+##
+################################################################################
+
+
+import spicy;
+
+################################################################################
+## Global Variables
+################################################################################
+
+
+#- Authentication Value --------------------------------------------------------
+# in 5.3.4.8 Calling Authentication Value Element (ACH)
+# 0 = none
+# 1 = c1221
+# 2 = c1222
+global authSetting: uint8 = 0;
+
+
+#- Encrypted Status ------------------------------------------------------------
+# Used to keep track if EPSEM data is encrypted.
+# Gathered from 5.3.3 epsem-control bit 2 to 3.
+global isEncrypted: bool = False;
+
+
+#- Command Context -------------------------------------------------------------
+# Used to provide EPSEM reponses context on the request made prior.
+global commandContext : vector<uint8>;
+
+#- Session Context -------------------------------------------------------------
+# Used to determine if a EPSEM session is established
+global sessionContext: uint8;
+
+################################################################################
+## Enums
+################################################################################
+
+type AsceElementTags = enum {
+    APPLICATION_CONTEXT                     = 0xA1,
+    CALLED_AP_TITLE                         = 0xA2,
+    CALLED_AP_INVOCATION_ID                 = 0xA4,
+    CALLING_AP_TITLE                        = 0xA6,
+    CALLING_APPLICATION_ENTITY_QUALIFIER    = 0xA7,
+    CALLING_AP_INVOCATION_ID                = 0xA8,
+    CALLING_AUTHENTICATION_VALUE            = 0xAC,
+    MECHANISM_NAME                          = 0x8B,
+    USER_INFORMATION                        = 0xBE
+
+};
+
+type IdentifierTags = enum {
+    UNIVERSAL   = 0x06,
+    RELATIVE    = 0x80
+};
+
+type EncodingTags = enum {
+    ASN1    = 0xA0,
+    OCTET   = 0x81
+};
+
+type EncodingASN1Tags = enum {
+    C1222 = 0xA1,
+    C1221 = 0xA0,
+
+};
+
+type EncodingC1221Tags = enum {
+    IDENT       = 0x80,
+    REQUEST     = 0x81,
+    RESPONSE    = 0x82
+};
+
+type RequestResponseCodes = enum {
+    OK              = 0x00,
+    ERR             = 0x01,
+    SNS             = 0x02,
+    ISC             = 0x03,
+    ONP             = 0x04,
+    IAR             = 0x05,
+    BSY             = 0x06,
+    DNR             = 0x07,
+    DLK             = 0x08,
+    RNO             = 0x09,
+    ISSS            = 0x0A,
+    SME             = 0x0B,
+    UAT             = 0x0C,
+    NETT            = 0x0D,
+    NETR            = 0x0E,
+    RQTL            = 0x0F,
+    RSTL            = 0x10,
+    SGNP            = 0x11,
+    SGERR           = 0x12,
+    IDENT           = 0x20,
+    FULLREAD        = 0x30,
+    PREADONE        = 0x31,
+    PREADTWO        = 0x32,
+    PREADTHREE      = 0x33,
+    PREADFOUR       = 0x34,
+    PREADFIVE       = 0x35,
+    PREADSIX        = 0x36,
+    PREADSEVEN      = 0x37,
+    PREADEIGHT      = 0x38,
+    PREADNINE       = 0x39,
+    PREADDEFAULT    = 0x3E,
+    PREADOFFSET     = 0x3F,
+    FULLWRITE       = 0x40,
+    PWRITEONE       = 0x41,
+    PWRITETWO       = 0x42,
+    PWRITETHREE     = 0x43,
+    PWRITEFOUR      = 0x44,
+    PWRITEFIVE      = 0x45,
+    PWRITESIX       = 0x46,
+    PWRITESEVEN     = 0x47,
+    PWRITEEIGHT     = 0x48,
+    PWRITENINE      = 0x49,
+    PWRITEOFFSET    = 0x4F,
+    LOGON           = 0x50,
+    SECURITY        = 0x51,
+    LOGOFF          = 0x52,
+    TERMINATE       = 0x21,
+    DISCONNECT      = 0x22,
+    WAIT            = 0x70,
+    REGISTER        = 0x27,
+    DEREGISTER      = 0x24,
+    RESOLVE         = 0x25,
+    TRACE           = 0x26
+};
+
+
+type IdentFeatureTags = enum {
+    SECURITY_MECHANISM  = 0x04,
+    SESSION_CTRL        = 0x05,
+    DEVICE_CLASS        = 0x06,
+    DEVICE_IDENTITY     = 0x07
+};
+
+
+################################################################################
+## 5.3.4 Association Control Service Element (ASCE) 
+################################################################################
+
+#- Top Level Message -----------------------------------------------------------
+public type Message = unit {
+    var success : bool = True;
+
+    : AscePdu[] foreach {
+        print commandContext;
+    }
+
+};
+
+#- 5.3.4 <asce-pdu> Pg. 49 -----------------------------------------------------
+type AscePdu = unit {
+    tag         : uint8;
+    len         : LengthType;
+    elements    : Element[] &size=self.len.len;
+
+    #on %done {print self; print "\n";}
+
+};
+
+#- 5.3.4 <elements> Pg. 49 -----------------------------------------------------
+type Element = unit {
+    tag : uint8 &convert=AsceElementTags($$);
+
+    switch (self.tag) {
+        AsceElementTags::APPLICATION_CONTEXT                    -> applicationContext : ApplicationContext;
+        AsceElementTags::CALLED_AP_TITLE                        -> calledApTitle : CalledApTitle;
+        AsceElementTags::CALLED_AP_INVOCATION_ID                -> calledApInvocationId : CalledApInvocationID;
+        AsceElementTags::CALLING_AP_TITLE                       -> callingApTitle : CallingAPTitle;
+        AsceElementTags::CALLING_APPLICATION_ENTITY_QUALIFIER   -> callingApplicationEntityQualifier : CallingApplicationEntityQualifier;
+        AsceElementTags::CALLING_AP_INVOCATION_ID               -> callingApInvocationId : CallingAPInvocationID;
+        AsceElementTags::CALLING_AUTHENTICATION_VALUE           -> callingAuthenticationValue : CallingAuthenticationValue;
+        AsceElementTags::MECHANISM_NAME                         -> mechanismName : MechanismName;
+        AsceElementTags::USER_INFORMATION                       -> userInformation : UserInformation;
+
+        * -> : NotImplemented();
+
+    };
+};
+
+#- 5.3.4.1 <aSO-context-element> Pg. 49 ----------------------------------------
+type ApplicationContext = unit {
+    len             : LengthType;
+    asoContextTag   : uint8;
+    asoContext      : ID;
+};
+
+#- 5.3.4.2 <called-AP-title-element> Pg. 50 ------------------------------------
+type CalledApTitle = unit {
+    len      : LengthType;
+    apTitle  : ID;
+};
+
+
+#- 5.3.4.3 <calling-AP-title-element> Pg. 50 -----------------------------------
+type CallingAPTitle = unit {
+    len      : LengthType;
+    apTitle  : ID;
+};
+
+#- 5.3.4.6 <calling-AE-qualifier-element> Pg. 51 -------------------------------
+type CallingApplicationEntityQualifier = unit {
+    integerLen              : LengthType;
+    integerTag              : uint8;
+    callingAeQualifierLen   : LengthType;
+    callingAeQualifier      : bitfield(8){
+        TEST: 0;
+        URGENT: 1;
+        NOTIFICATION: 2;
+        RESERVED: 3..7;
+    };
+};
+
+#- 5.3.4.7 <mechanism-name-element> Pg. 52 -------------------------------------
+type MechanismName = unit {
+    len     : LengthType;
+    name    : UniversalObjectIdentifier(self.len.len);
+};
+
+#- 5.3.4.8 <calling-authentication-value-element> Pg. 53 -----------------------
+type CallingAuthenticationValue = unit {
+    len                 : LengthType;
+    externalTag         : uint8;
+    eternalLen          : LengthType;
+    indirectReference   : CAVIndirectRef &try;
+    encodingTag         : uint8 &convert=EncodingTags($$);
+
+    switch (self.encodingTag){
+        EncodingTags::ASN1  -> singleAsn1   : CAVSingleAsn1;
+        EncodingTags::OCTET -> octetAligned : CAVOctetAligned;
+
+        * -> : NotImplemented();
+    };
+};
+
+#- 5.3.4.8 <calling-authentication-value-octet-aligned> Pg. 54 -----------------
+type CAVOctetAligned = unit {
+    len     : LengthType;
+    octets  : bytes &size=self.len.len;
+};
+
+#- 5.3.4.8 <calling-authentication-value-indirect-reference> Pg. 53 ------------
+type CAVIndirectRef = unit {
+    a: uint8 {
+        if($$ != 0x02)
+            self.backtrack();
+    }
+    b: uint8 {
+        if($$ != 0x01)
+            self.backtrack();
+    }
+    c: uint8 {
+        if($$ != 0x00)
+            self.backtrack();
+    }
+};
+
+#- 5.3.4.8 <calling-authentication-value-single-asn1> Pg. 53 -------------------
+type CAVSingleAsn1 = unit {
+    len             : LengthType;
+    mechanismTag    : uint8 &convert=EncodingASN1Tags($$);
+
+    switch (self.mechanismTag){
+        EncodingASN1Tags::C1222 -> c1222Encoding: CallingAuthValC1222;
+        EncodingASN1Tags::C1221 -> c1221Encoding: CallingAuthValC1221;
+        
+        #undefined encoding
+        * -> unimplementedValue: bytes &size=self.len.len - 1;
+    };
+};
+
+#- 5.3.4.8.1 <calling-authentication-value-c1222> Pg. 54 -----------------------
+type CallingAuthValC1222 = unit {
+    len     : LengthType;
+    keyId   : KeyID &try;
+    iv      : IV;
+
+    on %init() {
+        authSetting = 2;
+    }
+};
+
+#- 5.3.4.8.1 <key-id-element> Pg. 55 -------------------------------------------
+type KeyID = unit {
+    tag: uint8 {
+        if ($$ != 0x80)
+            self.backtrack();
+    }
+    len     : LengthType;
+    keyId   : uint8;
+};
+
+#- 5.3.4.8.1 <iv-element> Pg. 55 -----------------------------------------------
+type IV = unit {
+    tag : uint8;
+    len : LengthType;
+    iv  : uint32;
+};
+
+#- 5.3.4.8.2 <calling-authentication-value-c1221> Pg. 57 -----------------------
+type CallingAuthValC1221 = unit {
+    len : LengthType;
+    msg : uint8 &convert=EncodingC1221Tags($$);
+
+    switch (self.msg){
+        EncodingC1221Tags::IDENT    -> authIdent: C1221AuthIdent;
+        EncodingC1221Tags::REQUEST  -> authReq  : C1221AuthReq;
+        EncodingC1221Tags::RESPONSE -> authResp : C1221AuthResp;
+        
+        * -> : NotImplemented();
+    };
+
+    on %init() {
+        authSetting = 2;
+    }
+};
+
+#- 5.3.4.8.2 <c1221-auth-identification-octet-string> Pg. 58 -------------------
+type C1221AuthIdent = unit {
+    len : LengthType;
+
+    # Listed in c1221 spec and not implemented in this parser.
+    authService : bytes &size=self.len.len;
+};
+
+#- 5.3.4.8.2 <c1221-auth-request-octet-string> Pg. 58 --------------------------
+type C1221AuthReq = unit {
+    len : LengthType;
+
+    # Listed in c1221 spec and not implemented in this parser.
+    authReq : bytes &size=self.len.len;
+};
+
+#- 5.3.4.8.2 <c1221-auth-response-octet-string> Pg. 58 -------------------------
+type C1221AuthResp = unit {
+    len : LengthType;
+
+    # Listed in c1221 spec and not implemented in this parser.
+    authResp    : bytes &size=self.len.len;
+};
+
+#- 5.3.4.9 <called-AP-invocation-id-element> Pg. 59 ----------------------------
+type CalledApInvocationID = unit {
+    len     : LengthType;
+    intTag  : uint8;
+    idLen   : LengthType;
+    id      : bytes &size=self.idLen.len;
+
+};
+
+#- 5.3.4.10 <calling-AP-invocation-id-element> Pg. 60 --------------------------
+type CallingAPInvocationID = unit {
+    len     : LengthType;
+    intTag  : uint8;
+    idLen   : LengthType;
+    id      : bytes &size=self.idLen.len;
+};
+
+#- 5.3.4.11 <user-information-element> Pg. 62 ----------------------------------
+type UserInformation = unit {
+    externalLen         : LengthType;
+    externalTag         : uint8;
+    len                 : LengthType;
+    indirectReference   : UserIndirectRef &try;
+    octetTag            : uint8;
+    userInfoLen         : LengthType;
+    epsem               : Epsem(self.userInfoLen.len);
+    footer              : UserInformationFooter if(authSetting == 2);
+
+    #on external_len {print "external_len: "; print self.external_len.len; print "";}
+    #on external_tag {print "external_tag: "; print self.external_tag; print "";}
+    #on len {print "len: "; print self.len.len; print "";}
+    #on indirect_reference {print "indirect_ref: "; print self.indirect_reference; print "";}
+    #on octet_tag {print "octet_tag: "; print self.octet_tag; print "";}
+    #on user_info_len {print "user_info_len: "; print self.user_info_len.len; print "";}
+    #on epsem {print "epsem: "; print self.epsem; print "";}
+    #on footer {print "footer: "; print self.footer; print "";}
+};
+
+#- 5.3.4.11 <mac> Pg. 63 -------------------------------------------------------
+type UserInformationFooter = unit {
+    mac : bytes &eod;
+};
+
+#- 5.3.4.11 <user-information-indirect-reference> Pg. 62 -----------------------
+type UserIndirectRef = unit {
+    tag: uint8 {
+        if ($$ != 0x02)
+            self.backtrack();
+    }
+    len         : LengthType;
+    encoding    : uint8;
+};
+
+################################################################################
+## 5.3.3 EPSEM Envelop Structure 
+################################################################################
+
+#- 5.3.3 <epsem> Pg. 47 --------------------------------------------------------
+type Epsem = unit(len: uint64) {
+
+    epsemControl    : bitfield (8) {
+        responseControl     : 0..1;
+        securityMode        : 2..3;
+        edClassIncluded     : 4;
+        proxyServiceUsed    : 5;
+        recoverySession     : 6;
+    };
+    edClass         : bytes &size=4 if (self.epsemControl.edClassIncluded == 1);
+
+    #if 2
+    encryptedEpsem  : bytes &size= len - 5
+        if(self.epsemControl.securityMode == 2);
+    #if 1 or 0
+    data            : PlaintextEpsem
+        if(self.epsemControl.securityMode == 1 || self.epsemControl.securityMode == 0);
+
+    on epsemControl {
+        if (self.epsemControl.securityMode == 2){
+            isEncrypted = True;
+        }
+        else{
+            isEncrypted = False;
+        }
+    }
+
+};
+
+type PlaintextEpsem = unit{
+    data: EpsemService[];
+    : b"\x00";
+};
+
+
+################################################################################
+## 5.3.2 EPSEM 
+################################################################################
+
+type EpsemService = unit() {
+    len     : C1222::LengthType;
+    service : Service(self.len.len) if(self.len.len != 0x00);
+};
+
+type Service = unit(len: uint64){
+    serviceTag: uint8 &convert=RequestResponseCodes($$);
+
+    switch (self.serviceTag){
+        RequestResponseCodes::OK            -> ok           : ResponseOk(len -1);
+        RequestResponseCodes::ERR           -> err          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::SNS           -> sns          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::ISC           -> isc          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::ONP           -> onp          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::IAR           -> iar          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::BSY           -> bsy          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::DNR           -> dnr          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::DLK           -> dlk          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::RNO           -> rno          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::ISSS          -> isss         : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::SME           -> sme          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::UAT           -> uat          : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::NETT          -> nett         : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::NETR          -> netr         : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::RQTL          -> rqtl         : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::RSTL          -> rstl         : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::SGNP          -> sgnp         : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::SGERR         -> sgerr        : ResponseNok(self.serviceTag, len-1);
+        RequestResponseCodes::IDENT         -> identify     : void;
+        RequestResponseCodes::FULLREAD      -> fullread     : uint16;
+        RequestResponseCodes::PREADONE      -> preadone     : ReadReqPRead(1);
+        RequestResponseCodes::PREADTWO      -> preadtwo     : ReadReqPRead(2);
+        RequestResponseCodes::PREADTHREE    -> preadthree   : ReadReqPRead(3);
+        RequestResponseCodes::PREADFOUR     -> preadfour    : ReadReqPRead(4);
+        RequestResponseCodes::PREADFIVE     -> preadfive    : ReadReqPRead(5);
+        RequestResponseCodes::PREADSIX      -> preadsix     : ReadReqPRead(6);
+        RequestResponseCodes::PREADSEVEN    -> preadseven   : ReadReqPRead(7);
+        RequestResponseCodes::PREADEIGHT    -> preadeight   : ReadReqPRead(8);
+        RequestResponseCodes::PREADNINE     -> preadnine    : ReadReqPRead(9);
+        RequestResponseCodes::PREADDEFAULT  -> preaddefault : void;
+        RequestResponseCodes::PREADOFFSET   -> preadoffset  : ReadReqPReadOffset;
+        RequestResponseCodes::FULLWRITE     -> fullwrite    : WriteReqFull;
+        RequestResponseCodes::PWRITEONE     -> pwriteone    : WriteReqPWrite(1);
+        RequestResponseCodes::PWRITETWO     -> pwritetwo    : WriteReqPWrite(2);
+        RequestResponseCodes::PWRITETHREE   -> pwritethree  : WriteReqPWrite(3);
+        RequestResponseCodes::PWRITEFOUR    -> pwritefour   : WriteReqPWrite(4);
+        RequestResponseCodes::PWRITEFIVE    -> pwritefive   : WriteReqPWrite(5);
+        RequestResponseCodes::PWRITESIX     -> pwritesix    : WriteReqPWrite(6);
+        RequestResponseCodes::PWRITESEVEN   -> pwriteseven  : WriteReqPWrite(7);
+        RequestResponseCodes::PWRITEEIGHT   -> pwriteeight  : WriteReqPWrite(8);
+        RequestResponseCodes::PWRITENINE    -> pwritenine   : WriteReqPWrite(9);
+        RequestResponseCodes::PWRITEOFFSET  -> pwriteoffset : WriteReqOffset;
+        RequestResponseCodes::LOGON         -> logon        : LogonReq;
+        RequestResponseCodes::SECURITY      -> security     : SecurityReq;
+        RequestResponseCodes::LOGOFF        -> logoff       : void;
+        RequestResponseCodes::TERMINATE     -> terminate    : void;
+        RequestResponseCodes::DISCONNECT    -> disconnect   : void;
+        RequestResponseCodes::WAIT          -> wait         : WaitReq;
+        RequestResponseCodes::REGISTER      -> register     : RegisterReq;
+        RequestResponseCodes::DEREGISTER    -> deregister   : DeregisterReq;
+        RequestResponseCodes::RESOLVE       -> resolve      : ResolveReq;
+        RequestResponseCodes::TRACE         -> trace        : Trace(len-1);
+
+        * -> : NotImplemented();
+    };
+
+    on identify{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadtwo{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadone{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on fullread{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadthree{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadfour{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadfive{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadsix{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadseven{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadeight{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadnine{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preaddefault{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on preadoffset{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on fullwrite{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwriteone{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwritetwo{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwritethree{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwritefour{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwritefive{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwritesix{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwriteseven{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwriteeight{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwritenine{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on pwriteoffset{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on logon{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on security{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on logoff{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on terminate{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on disconnect{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on wait{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on register{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on deregister{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on resolve{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on trace{commandContext.push_back(cast<uint8>(self.serviceTag));}
+};
+
+type ResponseOk = unit(len : uint64) {
+    
+    var command : C1222::RequestResponseCodes;
+    
+
+    switch (self.command){
+        RequestResponseCodes::IDENT         -> identify     : ResponseOkIdent;
+        RequestResponseCodes::FULLREAD      -> fullread     : ReadRespOk(1);
+        RequestResponseCodes::PREADONE      -> preadone     : ReadRespOk(1);
+        RequestResponseCodes::PREADTWO      -> preadtwo     : ReadRespOk(2);
+        RequestResponseCodes::PREADTHREE    -> preadthree   : ReadRespOk(3);
+        RequestResponseCodes::PREADFOUR     -> preadfour    : ReadRespOk(4);
+        RequestResponseCodes::PREADFIVE     -> preadfive    : ReadRespOk(5);
+        RequestResponseCodes::PREADSIX      -> preadsix     : ReadRespOk(6);
+        RequestResponseCodes::PREADSEVEN    -> preadseven   : ReadRespOk(7);
+        RequestResponseCodes::PREADEIGHT    -> preadeight   : ReadRespOk(8);
+        RequestResponseCodes::PREADNINE     -> preadnine    : ReadRespOk(9);
+        RequestResponseCodes::PREADDEFAULT  -> preaddefault : ReadRespOk(1);
+        RequestResponseCodes::PREADOFFSET   -> preadoffset  : ReadRespOk(1);
+        RequestResponseCodes::FULLWRITE     -> fullwrite    : void;
+        RequestResponseCodes::PWRITEONE     -> pwriteone    : void;
+        RequestResponseCodes::PWRITETWO     -> pwritetwo    : void;
+        RequestResponseCodes::PWRITETHREE   -> pwritethree  : void;
+        RequestResponseCodes::PWRITEFOUR    -> pwritefour   : void;
+        RequestResponseCodes::PWRITEFIVE    -> pwritefive   : void;
+        RequestResponseCodes::PWRITESIX     -> pwritesix    : void;
+        RequestResponseCodes::PWRITESEVEN   -> pwriteseven  : void;
+        RequestResponseCodes::PWRITEEIGHT   -> pwriteeight  : void;
+        RequestResponseCodes::PWRITENINE    -> pwritenine   : void;
+        RequestResponseCodes::PWRITEOFFSET  -> pwriteoffset : void;
+        RequestResponseCodes::LOGON         -> logon        : LogonResp;
+        RequestResponseCodes::SECURITY      -> security     : void;
+        RequestResponseCodes::LOGOFF        -> logoff       : void;
+        RequestResponseCodes::TERMINATE     -> terminate    : void;
+        RequestResponseCodes::DISCONNECT    -> disconnect   : void;
+        RequestResponseCodes::WAIT          -> wait         : void;
+        RequestResponseCodes::REGISTER      -> register     : RegisterRespOk;
+        RequestResponseCodes::DEREGISTER    -> deregister   : void;
+        RequestResponseCodes::RESOLVE       -> resolve      : ResolveRespOk;
+        RequestResponseCodes::TRACE         -> trace        : Trace(len);
+
+        * -> : NotImplemented();
+    };
+
+    on %init{
+        self.command = RequestResponseCodes(commandContext.front());
+    }
+
+    on %done{
+        popFront();
+    }
+};
+
+type ResponseNok = unit(code: RequestResponseCodes, len: uint64){
+
+    var actualLength : len;
+    
+    maxRequestSize  : uint32 if(code == RequestResponseCodes::RQTL);
+    maxResponseSize : uint32 if(code == RequestResponseCodes::RSTL);
+    sigerrResp      : bytes &size=self.actualLength if(code == RequestResponseCodes::SGERR);
+
+    trace           : Trace(self.actualLength) if((RequestResponseCodes(commandContext.front()) == RequestResponseCodes::TRACE ) && (code != RequestResponseCodes::SGERR));
+
+    on maxRequestSize{
+        if(code == RequestResponseCodes::RQTL){
+            self.actualLength -= 4;
+        }
+    }
+
+    on maxResponseSize{
+        if(code == RequestResponseCodes::RSTL){
+            self.actualLength -= 4;
+        }
+    }
+
+    on %done{
+        popFront();
+    }
+};
+
+#- 5.3.2.4.1 Identification Service <ident-r><ok> Pg. 22 -----------------------
+type ResponseOkIdent = unit {
+    std         : uint8;
+    ver         : uint8;
+    rev         : uint8;
+    features    : IdentFeature[] &until=0x00;
+    eol         : uint8;
+};
+
+#- 5.3.2.4.1 Identification Service <feature> Pg. 22 ---------------------------
+type IdentFeature = unit {
+    tag : uint8 &convert=IdentFeatureTags($$);
+
+    switch(self.tag){
+        IdentFeatureTags::SECURITY_MECHANISM    -> securityMechanism    : ID;
+        IdentFeatureTags::SESSION_CTRL          -> sessionCtrl          : IdentSessionCtrl; 
+        IdentFeatureTags::DEVICE_CLASS          -> deviceClass          : ID;
+        IdentFeatureTags::DEVICE_IDENTITY       -> deviceIdentity       : IdentDeviceIdentity;
+
+        * -> : NotImplemented();
+    };
+};
+
+#- 5.3.2.4.1 Identification Service <session-ctrl> Pg. 23 ----------------------
+type IdentSessionCtrl = unit {
+    sessionCtrl: bitfield(8) {
+        nbrSessionSupported     : 0..6;
+        sessionlessSupported    : 7;
+    };
+};
+
+#- 5.3.2.4.1 Identification Service <device-identity> Pg. 24 -------------------
+type IdentDeviceIdentity = unit {
+    len             : uint8;
+    format          : uint8;
+    identification  : bytes &size=self.len-1;
+};
+
+#- 5.3.2.4.2 Read Service <pread-index> Pg. 25 ---------------------------------
+type ReadReqPRead = unit(count: uint64) {
+    tableid         : uint16;
+    index           : uint16[count];
+    elementCount    : uint16;
+};
+
+#- 5.3.2.4.2 Read Service <pread-offset> Pg. 25 --------------------------------
+type ReadReqPReadOffset = unit {
+    tableid     : uint16;
+    offset      : bytes &size=3;
+    octetCount  : uint16;
+};
+
+#- 5.3.2.4.2 Read Service <read-r><ok> Pg. 26 ----------------------------------
+type ReadRespOk = unit(count: uint64){
+    var extracount  : uint64 = 0;
+    var i           : uint64 = 0;
+    tables          : TableData[count] foreach{
+        if(self.tables[self.i].count == 0xFFFF){
+            self.extracount = self.extracount + 1;
+        }
+        self.i = self.i + 1;
+    }
+    extratables     : TableData[self.extracount] if (self.extracount != 0);
+};
+
+#- 5.3.2.4.2 Read Service <table-data> Pg. 26 ----------------------------------
+# Same structure for write service as well.
+type TableData = unit {
+    count   : uint16;                  #need to handle when count == 0 pending length sent.
+    data    : bytes &size=self.count;
+    cksum   : uint8;
+};
+
+#- 5.3.2.4.3 Write Service <full-write> Pg. 27 ---------------------------------
+type WriteReqFull = unit{
+    tableid : uint16;
+    table   : TableData;
+    extra   : TableData if(self.table.count == 0xFFFF);
+};
+
+#- 5.3.2.4.3 Write Service <pwrite-index> Pg. 27 --------------------------------
+type WriteReqPWrite = unit(count: uint64){
+    tableid : uint16;
+    index   : uint16[count];
+    table   : TableData;
+};
+
+#- 5.3.2.4.3 Write Service <pwrite-offset> Pg. 27 ------------------------------
+type WriteReqOffset = unit{
+    tableid : uint16;
+    offset  : bytes &size=3;
+    table   : TableData;
+};
+
+#- 5.3.2.4.4 Logon Service <logon> Pg. 28 --------------------------------------
+type LogonReq = unit{
+    userid              : uint16;
+    user                : bytes &size=10;
+    reqSessionTimeout   : uint16;
+
+    on %done{
+        sessionContext = 1;
+    }
+};
+
+#- 5.3.2.4.4 Logon Service <logon-r><ok> Pg. 29 --------------------------------
+type LogonResp = unit{
+    respSessionTimeout  : uint16;
+};
+
+#- 5.3.2.4.5 Security Service <security> Pg. 29 --------------------------------
+type SecurityReq = unit{
+    password    : bytes &size=20;
+    userid      : uint16 if(sessionContext == 1);
+};
+
+#- 5.3.2.4.9 Wait Service <wait> Pg. 32 ----------------------------------------
+type WaitReq = unit{
+    timeis  : uint8;
+};
+
+#- 5.3.2.4.10 Registration Service <register> Pg. 33 ----------------------------
+type RegisterReq = unit{
+
+    var lastDevice  : uint8 = 0;
+    var count       : uint64 = 0;
+
+    nodetype: bitfield(8){
+        relay               : 0;
+        masterRelay         : 1;
+        host                : 2;
+        notificationHost    : 3;
+        authenticationHost  : 4;
+        endDevice           : 5;
+        reserved            : 6;
+        myDomainPatternFlag : 7;
+    };
+
+    connectiontype          : bitfield(8){
+        broadcastAndMulticast   : 0;
+        messageAcceptWindow     : 1;
+        playbackRejection       : 2;
+        reserved                : 3;
+        connectionlessMode      : 4;
+        acceptConnectionless    : 5;
+        connectionMode          : 6;
+        acceptConnections       : 7;
+    };
+
+    deviceClass : RegisterReqDeviceClass[] &while=(self.lastDevice !=0) foreach{
+        if((self.deviceClass[self.count].a.done == 0) && (self.deviceClass[self.count].b.done == 0)
+        && (self.deviceClass[self.count].c.done == 0) && (self.deviceClass[self.count].d.done == 0)){
+            self.lastDevice = 1;
+        }
+        self.count = self.count + 1;
+    }
+
+    apTitle  : ID;
+
+    electronicSerialNumber: ID;
+
+    addressLen          : uint8;
+    nativeAddress       : bytes &size=self.addressLen;
+    registrationPeriod  : bytes &size=3;
+    myDomainPattern     : RegisterReqDomainPattern if(self.nodetype.myDomainPatternFlag == 1);
+
+};
+
+#- 5.3.2.4.10 Registration Service <device-class> Pg. 36 -----------------------
+type RegisterReqDeviceClass = unit{
+    
+    a: bitfield(8){
+        data: 0..6;
+        done: 7;
+    };
+    b: bitfield(8){
+        data: 0..6;
+        done: 7;
+    };
+    c: bitfield(8){
+        data: 0..6;
+        done: 7;
+    };
+    d: bitfield(8){
+        data: 0..6;
+        done: 7;
+    };
+};
+
+#- 5.3.2.4.10 Registration Service <my-domain-pattern> Pg. 37 ------------------
+type RegisterReqDomainPattern = unit{
+    notifPatternLen : uint8;
+    notifPattern    : bytes &size=self.notifPatternLen;
+};
+
+#- 5.3.2.4.10 Registration Service <register-r><ok> Pg. 38 ---------------------
+type RegisterRespOk = unit{
+    apTitle  : ID;
+
+    regDelay    : uint16;
+    regPeriod   : bytes &size=3;
+    regInfo     : bitfield(8){
+        directMessagingAvailable    : 0;
+        messageAcceptanceWindowMode : 1;
+        playbackRejectionMode       : 2;
+        reserved                    : 3;
+        connectionlessMode          : 4;
+        acceptConnectionless        : 5;
+        connectionMode              : 6;
+        acceptConnections           : 7;
+    };
+};
+
+#- 5.3.2.4.11 Deregister Service <deregister> Pg. 40 ---------------------------
+type DeregisterReq = unit{
+    apTitle  : ID;
+};
+
+#- 5.3.2.4.12 Resolve Service <resolve> Pg. 41 ---------------------------------
+type ResolveReq = unit{
+    apTitle  : ID;
+};
+
+#- 5.3.2.4.12 Resolve Service <resolve-r><ok> Pg. 42 ---------------------------
+type ResolveRespOk = unit{
+    localAddrLen    : uint8;
+    localAddr       : bytes &size=self.localAddrLen;
+};
+
+#- 5.3.2.4.13 Trace Service <trace> Pg. 41 ---------------------------------
+type Trace = unit(len:uint64){
+
+    trace: ID[] &size=len;
+
+};
+
+
+
+################################################################################
+## 5.2 ASN1 Data Encoding Rules
+################################################################################
+
+#- 5.2.2 Length Fields Encoding Pg. 14 -----------------------------------------
+type LengthType = unit {
+  var len       : uint64;
+  var tagLen    : uint8;
+
+  data  : bitfield(8) {
+    num     : 0..6;
+    islong  : 7;
+  };
+
+
+  switch ( self.data.islong ) {
+    0 -> : void {
+      self.len = self.data.num;
+      self.tagLen = 1;
+    }
+    1 -> : bytes &size=self.data.num
+           &convert=$$.to_uint(spicy::ByteOrder::Network) {
+      self.len = $$;
+      self.tagLen = self.data.num + 1;
+    }
+
+    * -> : NotImplemented();
+  };
+};
+
+
+
+
+#- 5.2.3 <*-id-element> Pg. 15 -----------------------------------------
+type ID = unit{
+    tag  : uint8 &convert=IdentifierTags($$);
+    len  : LengthType;
+
+    switch (self.tag){
+        IdentifierTags::UNIVERSAL -> universalAptitleId : UniversalObjectIdentifier(self.len.len);
+        IdentifierTags::RELATIVE  -> relativeAptitleId  : RelativeObjectIdentifier(self.len.len);
+
+        * -> : NotImplemented();
+    };
+
+};
+
+type UniversalObjectIdentifier = unit(len: uint64){
+    var oidbytes: bytes;
+    var temp: uint64;
+    var oidstring: string;
+
+    main: uint8 if (len >= 1 ) {
+        self.temp = $$ / 40;
+        self.oidbytes += ("%d" % (self.temp)).encode();
+        self.temp = $$ % 40;
+        self.oidbytes += (".%d" % (self.temp)).encode();
+        self.temp = 0;
+    }
+
+    sublist : ObjectIdentifierNibble[len -1];
+
+    on sublist foreach{
+        self.temp = (self.temp<<7) | $$.data.num;
+        if($$.data.more != 1){
+            self.oidbytes += (".%d" % (self.temp)).encode();
+            self.temp = 0;
+        }
+    }
+
+    on %done {
+        self.oidstring = self.oidbytes.decode();
+    }
+};
+
+type RelativeObjectIdentifier = unit(len: uint64){
+    var oidbytes: bytes;
+    var temp: uint64;
+    var oidstring: string;
+
+    sublist : ObjectIdentifierNibble[len];
+
+    on sublist foreach{
+        self.temp = (self.temp<<7) | $$.data.num;
+        if($$.data.more != 1){
+            self.oidbytes += (".%d" % (self.temp)).encode();
+            self.temp = 0;
+        }
+    }
+
+    on %done {
+        self.oidstring = self.oidbytes.decode();
+    }
+};
+
+type ObjectIdentifierNibble = unit {
+    data : bitfield(8) {
+        num: 0..6;
+        more: 7;
+    };
+};
+
+
+type NotImplemented = unit() {
+    : bytes &eod; # any remaining unparsed data
+};
+
+################################################################################
+## Functions
+################################################################################
+
+#- Pop_Front -------------------------------------------------------------------
+# References global vector commandContext
+# Returns first value in the vector and removes it from the vector.
+function popFront() : uint8{
+    local size      : uint64    = |commandContext|;
+    local output    : uint8     = commandContext.front();
+
+    commandContext = commandContext.sub(1,size);
+
+    return output;
+}

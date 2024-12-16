@@ -1,0 +1,63 @@
+@load base/protocols/conn/removal-hooks
+
+module C1222;
+
+export {
+	## Log stream identifier.
+	redef enum Log::ID += { 
+							LOG_SUMMARY_LOG,
+						  };
+
+
+	global log_c1222: event(rec: summary_log);
+	global log_policy_summary_log: Log::PolicyHook;
+}
+
+redef record connection += {
+	c1222_proto: string &optional;
+	c1222_summary_log: summary_log &optional;
+};
+
+export {
+    const c1222_ports_tcp: set[port] = { 1153/tcp } &redef;
+    const c1222_ports_udp: set[port] = { 1153/udp } &redef;
+}
+redef likely_server_ports += { c1222_ports_tcp, c1222_ports_udp };
+
+event zeek_init() &priority=5 {
+	Analyzer::register_for_ports(Analyzer::ANALYZER_C1222_TCP, c1222_ports_tcp);
+  Analyzer::register_for_ports(Analyzer::ANALYZER_C1222_UDP, c1222_ports_udp);
+
+	Log::create_stream(C1222::LOG_SUMMARY_LOG, 
+						[$columns=summary_log, 
+						$ev=log_c1222, 
+						$path="c1222", 
+						$policy=log_policy_summary_log]);
+}
+
+
+@if (Version::at_least("5.2.2"))
+event analyzer_confirmation_info(atype: AllAnalyzers::Tag, info: AnalyzerConfirmationInfo) {
+  if ( atype == Analyzer::ANALYZER_C1222_TCP ) {
+    info$c$c1222_proto = "tcp";
+  } else if ( atype == Analyzer::ANALYZER_C1222_UDP ) {
+    info$c$c1222_proto = "udp";
+  }
+}
+@else
+event analyzer_confirmation(c: connection, atype: Analyzer::Tag, aid: count) &priority=5 {
+  if ( atype == Analyzer::ANALYZER_C1222_TCP ) {
+    c$c1222_proto = "tcp";
+  } else if ( atype == Analyzer::ANALYZER_C1222_UDP ) {
+    c$c1222_proto = "udp";
+  }
+}
+@endif
+
+
+function emit_c1222_summary_log(c: connection) {
+    if (! c?$c1222_summary_log )
+        return;
+    Log::write(C1222::LOG_SUMMARY_LOG, c$c1222_summary_log);
+    delete c$c1222_summary_log;
+}

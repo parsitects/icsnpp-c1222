@@ -1,0 +1,12 @@
+module Zeek_C1222;
+
+import C1222;
+import zeek;
+
+on C1222::Message::%done {
+    zeek::confirm_protocol();
+}
+
+on C1222::Message::%error {
+    zeek::reject_protocol("error while parsing C12.22 message");
+}

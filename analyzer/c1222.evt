@@ -1,0 +1,103 @@
+import C1222;
+import Zeek_C1222;
+
+#ASCE Units
+export C1222::Message as Zeek_C1222::Message;
+export C1222::AscePdu as Zeek_C1222::AscePdu;
+export C1222::Element as Zeek_C1222::Element;
+export C1222::ApplicationContext as Zeek_C1222::ApplicationContext;
+export C1222::CalledApTitle as Zeek_C1222::CalledApTitle;
+export C1222::CallingAPTitle as Zeek_C1222::CallingAPTitle;
+export C1222::CallingApplicationEntityQualifier as Zeek_C1222::CallingApplicationEntityQualifier;
+export C1222::MechanismName as Zeek_C1222::MechanismName;
+export C1222::CallingAuthenticationValue as Zeek_C1222::CallingAuthenticationValue;
+export C1222::CalledApInvocationID as Zeek_C1222::CalledApInvocationID;
+export C1222::CallingAPInvocationID as Zeek_C1222::CallingAPInvocationID;
+export C1222::CAVIndirectRef as Zeek_C1222::CAVIndirectRef;
+export C1222::CAVSingleAsn1 as Zeek_C1222::CAVSingleAsn1;
+export C1222::CallingAuthValC1222 as Zeek_C1222::CallingAuthValC1222;
+export C1222::CallingAuthValC1221 as Zeek_C1222::CallingAuthValC1221;
+export C1222::C1221AuthIdent as Zeek_C1222::C1221AuthIdent;
+export C1222::C1221AuthReq as Zeek_C1222::C1221AuthReq;
+export C1222::C1221AuthResp as Zeek_C1222::C1221AuthResp;
+export C1222::CAVOctetAligned as Zeek_C1222::CAVOctetAligned;
+export C1222::NotImplemented as Zeek_C1222::NotImplemented;
+export C1222::KeyID as Zeek_C1222::KeyID;
+export C1222::IV as Zeek_C1222::IV;
+export C1222::UserInformation as Zeek_C1222::UserInformation;
+export C1222::UserIndirectRef as Zeek_C1222::UserIndirectRef;
+export C1222::UserInformationFooter as Zeek_C1222::UserInformationFooter;
+
+#Epsem Units
+export C1222::Epsem as Zeek_C1222::Epsem;
+export C1222::PlaintextEpsem as Zeek_C1222::PlaintextEpsem; 
+export C1222::EpsemService as Zeek_C1222::EpsemService; 
+export C1222::Service as Zeek_C1222::Service;
+export C1222::ResponseOk as Zeek_C1222::ResponseOk;
+export C1222::ResponseOkIdent as Zeek_C1222::ResponseOkIdent;
+export C1222::IdentFeature as Zeek_C1222::IdentFeature;
+export C1222::IdentSessionCtrl as Zeek_C1222::IdentSessionCtrl;
+export C1222::IdentDeviceIdentity as Zeek_C1222::IdentDeviceIdentity;
+export C1222::ReadRespOk as Zeek_C1222::ReadRespOk;
+export C1222::TableData as Zeek_C1222::TableData;
+export C1222::LogonResp as Zeek_C1222::LogonResp;
+export C1222::RegisterRespOk as Zeek_C1222::RegisterRespOk;
+export C1222::ResolveRespOk as Zeek_C1222::ResolveRespOk;
+export C1222::ResponseNok as Zeek_C1222::ResponseNok;
+export C1222::ReadReqPRead as Zeek_C1222::ReadReqPRead;
+export C1222::ReadReqPReadOffset as Zeek_C1222::ReadReqPReadOffset;
+export C1222::WriteReqFull as Zeek_C1222::WriteReqFull;
+export C1222::WriteReqPWrite as Zeek_C1222::WriteReqPWrite; 
+export C1222::WriteReqOffset as Zeek_C1222::WriteReqOffset;
+export C1222::LogonReq as Zeek_C1222::LogonReq;
+export C1222::WaitReq as Zeek_C1222::WaitReq;
+export C1222::RegisterReq as Zeek_C1222::RegisterReq;
+export C1222::RegisterReqDeviceClass as Zeek_C1222::RegisterReqDeviceClass;
+export C1222::RegisterReqDomainPattern as Zeek_C1222::RegisterReqDomainPattern;
+export C1222::DeregisterReq as Zeek_C1222::DeregisterReq;
+export C1222::ResolveReq as Zeek_C1222::ResolveReq;
+export C1222::Trace as Zeek_C1222::Trace;
+export C1222::SecurityReq as Zeek_C1222::SecurityReq;
+
+#ASNI Units
+export C1222::LengthType as Zeek_C1222::LengthType;
+export C1222::ID as Zeek_C1222::ID;
+export C1222::UniversalObjectIdentifier as Zeek_C1222::UniversalObjectIdentifier;
+export C1222::RelativeObjectIdentifier as Zeek_C1222::RelativeObjectIdentifier;
+export C1222::ObjectIdentifierNibble as Zeek_C1222::ObjectIdentifierNibble;
+
+
+#Enums
+export C1222::AsceElementTags as Zeek_C1222::AsceElementTags;
+export C1222::IdentifierTags as Zeek_C1222::IdentifierTags;
+export C1222::EncodingTags as Zeek_C1222::EncodingTags;
+export C1222::EncodingASN1Tags as Zeek_C1222::EncodingASN1Tags;
+export C1222::EncodingC1221Tags as Zeek_C1222::EncodingC1221Tags;
+export C1222::RequestResponseCodes as Zeek_C1222::RequestResponseCodes;
+export C1222::IdentFeatureTags as Zeek_C1222::IdentFeatureTags;
+
+protocol analyzer C1222_TCP over TCP:
+    parse with C1222::Message;
+
+
+protocol analyzer C1222_UDP over UDP:
+    parse with C1222::Message;
+
+on C1222::AscePdu -> event C1222::AscePdu(
+    $conn, 
+    $is_orig,
+    self
+    );
+
+on C1222::CallingAuthenticationValue -> event C1222::CallingAuthenticationValue(
+    $conn, 
+    $is_orig,
+    self
+    );
+
+
+on C1222::UserInformation -> event C1222::UserInformation(
+    $conn, 
+    $is_orig,
+    self
+    );

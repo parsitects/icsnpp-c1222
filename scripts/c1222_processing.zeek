@@ -53,6 +53,36 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
                 element_vector += "Calling_AP_Title";
                 break;
             case C1222::AsceElementTags_CALLING_APPLICATION_ENTITY_QUALIFIER:
+                local qualifier_element: vector of string;
+                local qualifier = element$callingApplicationEntityQualifier$callingAeQualifier;
+
+                if(qualifier$TEST == T){
+                    qualifier_element += "TEST";
+                }
+                if(qualifier$URGENT == T){
+                    qualifier_element += "URGENT";
+                }
+                if(qualifier$NOTIFICATION == T){
+                    qualifier_element += "NOTIFICATION";
+                }
+                if(qualifier$RESERVED_BIT_3 == T){
+                    qualifier_element += "RESERVED_BIT_3";
+                }
+                if(qualifier$RESERVED_BIT_4 == T){
+                    qualifier_element += "RESERVED_BIT_4";
+                }
+                if(qualifier$RESERVED_BIT_5 == T){
+                    qualifier_element += "RESERVED_BIT_5";
+                }
+                if(qualifier$RESERVED_BIT_6 == T){
+                    qualifier_element += "RESERVED_BIT_6";
+                }
+                if(qualifier$RESERVED_BIT_7 == T){
+                    qualifier_element += "RESERVED_BIT_7";
+                }
+
+                info_summary_log$calling_ae_qualifier = qualifier_element;
+
                 element_vector += "Calling_Application_Entity_Qualifier";
                 break;
             case C1222::AsceElementTags_CALLING_AP_INVOCATION_ID:
@@ -62,6 +92,7 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
                 element_vector += "Calling_Authentication_Value";
                 break;
             case C1222::AsceElementTags_MECHANISM_NAME:
+                info_summary_log$mechanism_name = element$mechanismName$name$oidstring;
                 element_vector += "Mechanism_Name";
                 break;
             case C1222::AsceElementTags_USER_INFORMATION:

@@ -219,10 +219,14 @@ type CallingApplicationEntityQualifier = unit {
     integerTag              : uint8;
     callingAeQualifierLen   : LengthType;
     callingAeQualifier      : bitfield(8){
-        TEST: 0;
-        URGENT: 1;
-        NOTIFICATION: 2;
-        RESERVED: 3..7;
+        TEST            : 0 &convert=cast<bool>($$);
+        URGENT          : 1 &convert=cast<bool>($$);
+        NOTIFICATION    : 2 &convert=cast<bool>($$);
+        RESERVED_BIT_3  : 3 &convert=cast<bool>($$);
+        RESERVED_BIT_4  : 4 &convert=cast<bool>($$);
+        RESERVED_BIT_5  : 5 &convert=cast<bool>($$);
+        RESERVED_BIT_6  : 6 &convert=cast<bool>($$);
+        RESERVED_BIT_7  : 7 &convert=cast<bool>($$);
     };
 };
 

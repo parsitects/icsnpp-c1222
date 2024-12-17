@@ -608,7 +608,7 @@ type ResponseOk = unit(len : uint64) {
 
 type ResponseNok = unit(code: RequestResponseCodes, len: uint64){
 
-    var actualLength : len;
+    var actualLength : uint64 = len;
     
     maxRequestSize  : uint32 if(code == RequestResponseCodes::RQTL);
     maxResponseSize : uint32 if(code == RequestResponseCodes::RSTL);

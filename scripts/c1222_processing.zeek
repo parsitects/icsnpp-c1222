@@ -9,6 +9,20 @@ hook set_session_summary_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+function getIdString(ID: Zeek_C1222::ID): string{
+    local tag = ID$tag;
+    local returnVal: string;
+    switch tag {
+        case C1222::IdentifierTags_UNIVERSAL:
+            returnVal = ID$universalAptitleId$oidstring;
+            break;
+        case C1222::IdentifierTags_RELATIVE:
+            returnVal = ID$relativeAptitleId$oidstring;
+            break;
+    }
+    return returnVal;
+}
+
 
 event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu) {
     hook set_session_summary_log(c);
@@ -21,34 +35,21 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
     for (i,element in ascepdu$elements){
         switch element$tag {
             case C1222::AsceElementTags_APPLICATION_CONTEXT:
-#               info_summary_log$aso_context = element$applicationContext$asoContext$id$oidstring;
+                local ASOID = element$applicationContext$asoContext;
+                info_summary_log$aso_context = getIdString(ASOID);
                 element_vector += "Application_Context";
                 break;
             case C1222::AsceElementTags_CALLED_AP_TITLE:
-#                local calledApTitleTag = element$calledApTitle$apTitleTag;
-#                switch calledApTitleTag {
-#                    case C1222::IdentifierTags_UNIVERSAL:
-#                        info_summary_log$called_ap_title = element$calledApTitle$universalAptitleId$id$oidstring;
-#                        break;
-#                    case C1222::IdentifierTags_RELATIVE:
-#                        info_summary_log$called_ap_title = element$calledApTitle$relativeAptitleId$id$oidstring;
-#                        break;
-#                }
+                local calledApTitle = element$calledApTitle$apTitle;
+                info_summary_log$called_ap_title = getIdString(calledApTitle);
                 element_vector += "Called_AP_Title";
                 break;
             case C1222::AsceElementTags_CALLED_AP_INVOCATION_ID:
                 element_vector += "Called_AP_Invocation_ID";
                 break;
             case C1222::AsceElementTags_CALLING_AP_TITLE:
- #               local callingApTitleTag = element$callingApTitle$apTitleTag;
- #               switch callingApTitleTag {
- #                   case C1222::IdentifierTags_UNIVERSAL:
- #                       info_summary_log$calling_ap_title = element$callingApTitle$universalAptitleId$id$oidstring;
- #                       break;
- #                   case C1222::IdentifierTags_RELATIVE:
- #                       info_summary_log$calling_ap_title = element$callingApTitle$relativeAptitleId$id$oidstring;
- #                       break;
- #               }
+                local callingApTitle = element$callingApTitle$apTitle;
+                info_summary_log$calling_ap_title = getIdString(callingApTitle);
                 element_vector += "Calling_AP_Title";
                 break;
             case C1222::AsceElementTags_CALLING_APPLICATION_ENTITY_QUALIFIER:

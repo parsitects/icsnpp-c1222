@@ -45,6 +45,7 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
                 element_vector += "Called_AP_Title";
                 break;
             case C1222::AsceElementTags_CALLED_AP_INVOCATION_ID:
+                info_summary_log$called_ap_invocation_id = element$calledApInvocationId$id;
                 element_vector += "Called_AP_Invocation_ID";
                 break;
             case C1222::AsceElementTags_CALLING_AP_TITLE:
@@ -86,9 +87,29 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
                 element_vector += "Calling_Application_Entity_Qualifier";
                 break;
             case C1222::AsceElementTags_CALLING_AP_INVOCATION_ID:
+                info_summary_log$calling_ap_invocation_id = element$callingApInvocationId$id;
                 element_vector += "Calling_AP_Invocation_ID";
                 break;
             case C1222::AsceElementTags_CALLING_AUTHENTICATION_VALUE:
+                local authValueTag = element$callingAuthenticationValue$encodingTag;
+                if(authValueTag == C1222::EncodingTags_OCTET){
+                    info_summary_log$calling_auth_value = "OCTET_ALINGED";
+                }
+                else if (authValueTag == C1222::EncodingTags_ASN1){
+                    local mechanismTag = element$callingAuthenticationValue$singleAsn1$mechanismTag;
+                    if(mechanismTag == C1222::EncodingASN1Tags_C1222){
+                        info_summary_log$calling_auth_value = "C12.22";
+                    }
+                    else if(mechanismTag == C1222::EncodingASN1Tags_C1221){
+                        info_summary_log$calling_auth_value = "C12.21";
+                    }
+                    else{
+                        info_summary_log$calling_auth_value = "UNIMPLEMENTED";
+                    }
+                }
+                else{
+                    info_summary_log$calling_auth_value = "UNKNOWN";
+                }
                 element_vector += "Calling_Authentication_Value";
                 break;
             case C1222::AsceElementTags_MECHANISM_NAME:

@@ -22,4 +22,12 @@ export {
         calling_ap_invocation_id: string &optional &log;
     };
 
+    ## Record type containing the column fields of the summary c12.22 log.
+    type authentication_value_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+    };
+
 }

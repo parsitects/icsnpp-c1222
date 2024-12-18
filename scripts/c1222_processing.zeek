@@ -9,6 +9,15 @@ hook set_session_summary_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_authentication_value_log(c: connection) {
+    if ( ! c?$c1222_authentication_value_log )
+        c$c1222_authentication_value_log = authentication_value_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -319,7 +328,9 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
 }
 
 event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingauthenticationvalue: Zeek_C1222::CallingAuthenticationValue) {
-	;
+	hook set_authentication_value_log(c);
+
+    emit_c1222_authentication_value_log(c);
 }
 
 

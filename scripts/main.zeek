@@ -6,16 +6,20 @@ export {
 	## Log stream identifier.
 	redef enum Log::ID += { 
 							LOG_SUMMARY_LOG,
+              LOG_AUTHENTICATION_VALUE_LOG
 						  };
 
 
-	global log_c1222: event(rec: summary_log);
+  global log_c1222: event(rec: summary_log);
 	global log_policy_summary_log: Log::PolicyHook;
+  global log_authentication_value_log: event(rec: authentication_value_log);
+	global log_policy_authentication_value_log: Log::PolicyHook;
 }
 
 redef record connection += {
 	c1222_proto: string &optional;
 	c1222_summary_log: summary_log &optional;
+  c1222_authentication_value_log: authentication_value_log &optional;
 };
 
 export {
@@ -33,6 +37,12 @@ event zeek_init() &priority=5 {
 						$ev=log_c1222, 
 						$path="c1222", 
 						$policy=log_policy_summary_log]);
+
+	Log::create_stream(C1222::LOG_AUTHENTICATION_VALUE_LOG, 
+						[$columns=authentication_value_log, 
+						$ev=log_authentication_value_log, 
+						$path="c1222_authentication_value", 
+						$policy=log_policy_authentication_value_log]);
 }
 
 
@@ -60,4 +70,11 @@ function emit_c1222_summary_log(c: connection) {
         return;
     Log::write(C1222::LOG_SUMMARY_LOG, c$c1222_summary_log);
     delete c$c1222_summary_log;
+}
+
+function emit_c1222_authentication_value_log(c: connection) {
+    if (! c?$c1222_authentication_value_log )
+        return;
+    Log::write(C1222::LOG_AUTHENTICATION_VALUE_LOG, c$c1222_authentication_value_log);
+    delete c$c1222_authentication_value_log;
 }

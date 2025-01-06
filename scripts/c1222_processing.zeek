@@ -333,6 +333,14 @@ event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingaut
     local auth_value_log = c$c1222_authentication_value_log;
     local auth_value = callingauthenticationvalue;
 
+    #indirect ref
+    if(auth_value$indirectReference?$c && auth_value$indirectReference$c == 0x00){
+        auth_value_log$indirect_reference = T;
+    }
+    else{
+        auth_value_log$indirect_reference = F;
+    }
+
     #authentication_mechanism
     local authValueTag = auth_value$encodingTag;
     if(authValueTag == C1222::EncodingTags_OCTET){

@@ -30,6 +30,7 @@ export {
         proto: transport_proto &log;
 
         authentication_mechanism: string &optional &log;
+        indirect_reference: bool &optional &log;
         octet_aligned: string &optional &log;
         c1222_key_id: int &optional &log;
         c1222_iv: int &optional &log;

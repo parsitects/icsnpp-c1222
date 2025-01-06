@@ -28,6 +28,14 @@ export {
         uid: string &log;
         id: conn_id &log;
         proto: transport_proto &log;
+
+        authentication_mechanism: string &optional &log;
+        octet_aligned: string &optional &log;
+        c1222_key_id: int &optional &log;
+        c1222_iv: int &optional &log;
+        c1221_ident: string &optional &log;
+        c1221_req: string &optional &log;
+        c1221_resp: string &optional &log;
     };
 
 }

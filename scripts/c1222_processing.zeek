@@ -9,6 +9,15 @@ hook set_session_summary_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_authentication_value_log(c: connection) {
+    if ( ! c?$c1222_authentication_value_log )
+        c$c1222_authentication_value_log = authentication_value_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -319,7 +328,46 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
 }
 
 event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingauthenticationvalue: Zeek_C1222::CallingAuthenticationValue) {
-	;
+	hook set_authentication_value_log(c);
+
+    local auth_value_log = c$c1222_authentication_value_log;
+    local auth_value = callingauthenticationvalue;
+
+    #authentication_mechanism
+    local authValueTag = auth_value$encodingTag;
+    if(authValueTag == C1222::EncodingTags_OCTET){
+        auth_value_log$authentication_mechanism = "OCTET_ALINGED";
+        auth_value_log$octet_aligned = auth_value$octetAligned$octets;
+    }
+    else if (authValueTag == C1222::EncodingTags_ASN1){
+        local mechanismTag = auth_value$singleAsn1$mechanismTag;
+        if(mechanismTag == C1222::EncodingASN1Tags_C1222){
+            auth_value_log$authentication_mechanism = "C12.22";
+            auth_value_log$c1222_key_id = auth_value$singleAsn1$c1222Encoding$keyId$keyId;
+            auth_value_log$c1222_iv = auth_value$singleAsn1$c1222Encoding$iv$iv;
+        }
+        else if(mechanismTag == C1222::EncodingASN1Tags_C1221){
+            auth_value_log$authentication_mechanism = "C12.21";
+            if(auth_value$singleAsn1$c1221Encoding$msg == C1222::EncodingC1221Tags_IDENT){
+                auth_value_log$c1221_ident = auth_value$singleAsn1$c1221Encoding$authIdent$authService;
+            }
+            if(auth_value$singleAsn1$c1221Encoding$msg == C1222::EncodingC1221Tags_REQUEST){
+                auth_value_log$c1221_req = auth_value$singleAsn1$c1221Encoding$authReq$authReq;
+            }
+            if(auth_value$singleAsn1$c1221Encoding$msg == C1222::EncodingC1221Tags_RESPONSE){
+                auth_value_log$c1221_resp = auth_value$singleAsn1$c1221Encoding$authResp$authResp;
+            }
+        }
+        else{
+            auth_value_log$authentication_mechanism = "UNIMPLEMENTED";
+        }
+    }
+    else{
+        auth_value_log$authentication_mechanism = "UNKNOWN";
+    }
+
+
+    emit_c1222_authentication_value_log(c);
 }
 
 

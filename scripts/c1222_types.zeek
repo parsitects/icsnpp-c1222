@@ -39,4 +39,37 @@ export {
         c1221_resp: string &optional &log;
     };
 
+    #user data
+        #indirect reference encoding
+        #mac
+        #epsem control
+        #ed class
+        #encrypted epsem
+        #services
+
+    #Identification
+
+    #Read
+
+    #Write
+
+    #Logon
+
+    #Security
+
+    #Logoff
+
+    #Terminate
+
+    #Disconnect
+
+    #Wait
+
+    #Registration
+
+    #Deregistration
+
+    #Trace
+
+
 }

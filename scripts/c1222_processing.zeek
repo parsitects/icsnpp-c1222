@@ -75,20 +75,8 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
                 if(qualifier$NOTIFICATION == T){
                     qualifier_element += "NOTIFICATION";
                 }
-                if(qualifier$RESERVED_BIT_3 == T){
-                    qualifier_element += "RESERVED_BIT_3";
-                }
-                if(qualifier$RESERVED_BIT_4 == T){
-                    qualifier_element += "RESERVED_BIT_4";
-                }
-                if(qualifier$RESERVED_BIT_5 == T){
-                    qualifier_element += "RESERVED_BIT_5";
-                }
-                if(qualifier$RESERVED_BIT_6 == T){
-                    qualifier_element += "RESERVED_BIT_6";
-                }
-                if(qualifier$RESERVED_BIT_7 == T){
-                    qualifier_element += "RESERVED_BIT_7";
+                if(qualifier?$RESERVED){
+                    qualifier_element += fmt("RESERVED int:%s", qualifier$RESERVED);
                 }
 
                 info_summary_log$calling_ae_qualifier = qualifier_element;

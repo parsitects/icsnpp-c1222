@@ -161,6 +161,10 @@ public type Message = unit {
         print commandContext;
     }
 
+    on %error(msg: string){
+        print "ERROR: %s" % msg;
+    }
+
 };
 
 #- 5.3.4 <asce-pdu> Pg. 49 -----------------------------------------------------
@@ -222,11 +226,7 @@ type CallingApplicationEntityQualifier = unit {
         TEST            : 0 &convert=cast<bool>($$);
         URGENT          : 1 &convert=cast<bool>($$);
         NOTIFICATION    : 2 &convert=cast<bool>($$);
-        RESERVED_BIT_3  : 3 &convert=cast<bool>($$);
-        RESERVED_BIT_4  : 4 &convert=cast<bool>($$);
-        RESERVED_BIT_5  : 5 &convert=cast<bool>($$);
-        RESERVED_BIT_6  : 6 &convert=cast<bool>($$);
-        RESERVED_BIT_7  : 7 &convert=cast<bool>($$);
+        RESERVED        : 3..7 &convert=cast<uint8>($$);
     };
 };
 

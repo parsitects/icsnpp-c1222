@@ -311,8 +311,6 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
         info_summary_log$services = service_vector;
     }
     
-
-    C1222::emit_c1222_summary_log(c);
 }
 
 event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingauthenticationvalue: Zeek_C1222::CallingAuthenticationValue) {
@@ -362,11 +360,14 @@ event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingaut
         auth_value_log$authentication_mechanism = "UNKNOWN";
     }
 
-
-    emit_c1222_authentication_value_log(c);
 }
 
 
 event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek_C1222::UserInformation) {
 	;
+}
+
+event C1222::EndPacket(c: connection, is_orig: bool) {
+    C1222::emit_c1222_summary_log(c);
+    emit_c1222_authentication_value_log(c);
 }

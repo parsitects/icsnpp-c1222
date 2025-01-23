@@ -86,6 +86,11 @@ protocol analyzer C1222_TCP over TCP:
 protocol analyzer C1222_UDP over UDP:
     parse with C1222::Message;
 
+on C1222::AscePdu::%finally -> event C1222::EndPacket(
+    $conn,
+    $is_orig
+    );
+
 on C1222::AscePdu -> event C1222::AscePdu(
     $conn, 
     $is_orig,

@@ -41,6 +41,7 @@ export {
 
     #user data
         #indirect reference encoding
+        #padding
         #mac
         #epsem control
         #ed class
@@ -48,28 +49,74 @@ export {
         #services
 
     #Identification
+        #request/response
+        #std
+        #ver
+        #security mechanism
+        #nbrSessionSupported
+        #sessionlessSupported
+        #device class
+        #device identity format
+        #device identity
 
-    #Read
-
-    #Write
+    #Read/write
+        #request/response
+        #service type
+        #tableid
+        #offset
+        #index
+        #element count
+        #count
+        #data
+        #cksum
 
     #Logon
+        #request/response
+        #userid
+        #user
+        #req-session-idle-timeout
+        #resp-session-idle-timeout
 
     #Security
-
-    #Logoff
-
-    #Terminate
-
-    #Disconnect
+        #request/response
+        #password
+        #userid
 
     #Wait
+        #request/response
+        #time
 
     #Registration
+        #request/response
+        #node type
+        #conneciton type
+        #device class
+        #ap title
+        #electronic serial number
+        #native address
+        #registration period
+        #notification pattern
+        #reg-ap-title
+        #reg-delay
+        #reg-period
+        #reg-info
 
     #Deregistration
+        #request/response
+        #ap title
+
+    #resolve
+        #request/response
+        #ap title
+        #local address
 
     #Trace
+        #request/resposne
+        #vector of aptitle
+
+    #error
+        #service
+        #type
 
 
 }

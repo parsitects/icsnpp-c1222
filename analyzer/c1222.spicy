@@ -663,8 +663,8 @@ type IdentFeature = unit {
 #- 5.3.2.4.1 Identification Service <session-ctrl> Pg. 23 ----------------------
 type IdentSessionCtrl = unit {
     sessionCtrl: bitfield(8) {
-        nbrSessionSupported     : 0..6;
-        sessionlessSupported    : 7;
+        nbrSessionSupported     : 0..6 &convert=cast<uint8>($$);
+        sessionlessSupported    : 7 &convert=cast<bool>($$);
     };
 };
 

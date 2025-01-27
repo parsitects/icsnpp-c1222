@@ -12,9 +12,9 @@ export {
 
 
   global log_c1222: event(rec: summary_log);
-	global log_policy_summary_log: Log::PolicyHook;
+  global log_policy_summary_log: Log::PolicyHook;
   global log_authentication_value_log: event(rec: authentication_value_log);
-	global log_policy_authentication_value_log: Log::PolicyHook;
+  global log_policy_authentication_value_log: Log::PolicyHook;
   global log_identification_service_log: event(rec: identification_service_log);
   global log_policy_identification_service_log: Log::PolicyHook;
 }

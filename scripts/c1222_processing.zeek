@@ -18,6 +18,15 @@ hook set_authentication_value_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_identification_service_log(c: connection) {
+    if (! c?$c1222_identification_service_log)
+        c$c1222_identification_service_log = identification_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -365,6 +374,81 @@ event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingaut
 
 event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek_C1222::UserInformation) {
 	;
+}
+
+event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Service){
+    local service = serviceType$serviceTag;
+
+    #Ident Req
+    if(service == C1222::RequestResponseCodes_IDENT){
+        hook set_identification_service_log(c);
+        local ident_log = c$c1222_identification_service_log;
+        ident_log$req_resp = "Req";
+    }
+}
+
+event C1222::EndService(c: connection, is_orig: bool){
+    C1222::emit_c1222_identification_service_log(c);
+}
+
+#Ident Resp
+event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::ResponseOkIdent) {
+    hook set_identification_service_log(c);
+
+    local ident_log = c$c1222_identification_service_log;
+    ident_log$req_resp = "Resp";
+    
+    #std
+    local std_tag = ident$std;
+    switch std_tag {
+        case 0x00:
+            ident_log$standard = "ANSI C12.18";
+            break;
+        case 0x01:
+            ident_log$standard = "RESERVED";
+            break;
+        case 0x02:
+            ident_log$standard = "ANSI C12.21";
+            break;
+        case 0x03:
+            ident_log$standard = "ANSI C12.22";
+            break;
+        default:
+            ident_log$standard = "RESERVED";
+            break;
+    }
+
+    #version
+    ident_log$version = ident$ver;
+    #revision
+    ident_log$revision = ident$rev;
+
+    #features
+    for (i,feature in ident$features){
+        local feature_tag = feature$tag;
+        switch feature_tag {
+            case C1222::IdentFeatureTags_SECURITY_MECHANISM:
+                ident_log$security_mechanism = getIdString(feature$securityMechanism);
+                break;
+            case C1222::IdentFeatureTags_SESSION_CTRL:
+                if(feature$sessionCtrl$sessionCtrl$nbrSessionSupported == 0){
+                    ident_log$nbrSession_supported = F;
+                }
+                else{
+                    ident_log$nbrSession_supported = T;
+                }
+                ident_log$sessionless_supported = feature$sessionCtrl$sessionCtrl$sessionlessSupported;
+                break;
+            case C1222::IdentFeatureTags_DEVICE_CLASS:
+                ident_log$device_class = getIdString(feature$deviceClass);
+                break;
+            case C1222::IdentFeatureTags_DEVICE_IDENTITY:
+                ident_log$device_identity_format = feature$deviceIdentity$format;
+                ident_log$device_identity = feature$deviceIdentity$identification;
+                break;                
+        }
+    }
+
 }
 
 event C1222::EndPacket(c: connection, is_orig: bool) {

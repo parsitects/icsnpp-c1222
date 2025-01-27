@@ -86,15 +86,15 @@ protocol analyzer C1222_TCP over TCP:
 protocol analyzer C1222_UDP over UDP:
     parse with C1222::Message;
 
-on C1222::AscePdu::%finally -> event C1222::EndPacket(
-    $conn,
-    $is_orig
-    );
-
 on C1222::AscePdu -> event C1222::AscePdu(
     $conn, 
     $is_orig,
     self
+    );
+
+on C1222::AscePdu::%finally -> event C1222::EndPacket(
+    $conn,
+    $is_orig
     );
 
 on C1222::CallingAuthenticationValue -> event C1222::CallingAuthenticationValue(
@@ -106,6 +106,23 @@ on C1222::CallingAuthenticationValue -> event C1222::CallingAuthenticationValue(
 
 on C1222::UserInformation -> event C1222::UserInformation(
     $conn, 
+    $is_orig,
+    self
+    );
+
+on C1222::Service -> event C1222::Service(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::Service::%finally -> event C1222::EndService(
+    $conn,
+    $is_orig
+    );
+
+on C1222::ResponseOkIdent -> event C1222::ResponseOkIdent(
+    $conn,
     $is_orig,
     self
     );

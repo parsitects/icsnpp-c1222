@@ -48,16 +48,24 @@ export {
         #encrypted epsem
         #services
 
-    #Identification
-        #request/response
-        #std
-        #ver
-        #security mechanism
-        #nbrSessionSupported
-        #sessionlessSupported
-        #device class
-        #device identity format
-        #device identity
+    #Record type containing the column fields of the Identification service c12.22 log.
+    type identification_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        standard: string &optional &log;
+        version: int &optional &log;
+        revision: int &optional &log;
+        security_mechanism: string &optional &log;
+        nbrSession_supported: bool &optional &log;
+        sessionless_supported: bool &optional &log;
+        device_class: string &optional &log;
+        device_identity_format: int &optional &log;
+        device_identity: string &optional &log;
+    };
 
     #Read/write
         #request/response

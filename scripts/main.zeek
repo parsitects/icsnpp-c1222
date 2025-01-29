@@ -7,6 +7,7 @@ export {
 	redef enum Log::ID += { 
 							LOG_SUMMARY_LOG,
               LOG_AUTHENTICATION_VALUE_LOG,
+              LOG_USER_INFORMATION_LOG,
               LOG_IDENTIFICATION_SERVICE_LOG
 						  };
 
@@ -14,7 +15,9 @@ export {
   global log_c1222: event(rec: summary_log);
   global log_policy_summary_log: Log::PolicyHook;
   global log_authentication_value_log: event(rec: authentication_value_log);
-  global log_policy_authentication_value_log: Log::PolicyHook;
+	global log_policy_authentication_value_log: Log::PolicyHook;
+  global log_user_information_log: event(rec: user_information_log);
+	global log_policy_user_information_log: Log::PolicyHook;
   global log_identification_service_log: event(rec: identification_service_log);
   global log_policy_identification_service_log: Log::PolicyHook;
 }
@@ -23,6 +26,7 @@ redef record connection += {
 	c1222_proto: string &optional;
 	c1222_summary_log: summary_log &optional;
   c1222_authentication_value_log: authentication_value_log &optional;
+  c1222_user_information_log: user_information_log &optional;
   c1222_identification_service_log: identification_service_log &optional;
 };
 
@@ -47,6 +51,12 @@ event zeek_init() &priority=5 {
 						$ev=log_authentication_value_log, 
 						$path="c1222_authentication_value", 
 						$policy=log_policy_authentication_value_log]);
+
+  Log::create_stream(C1222::LOG_USER_INFORMATION_LOG, 
+						[$columns=user_information_log, 
+						$ev=log_user_information_log, 
+						$path="c1222_user_information", 
+						$policy=log_policy_user_information_log]);
 
   Log::create_stream(C1222::LOG_IDENTIFICATION_SERVICE_LOG, 
 						[$columns=identification_service_log, 
@@ -88,6 +98,13 @@ function emit_c1222_authentication_value_log(c: connection) {
         return;
     Log::write(C1222::LOG_AUTHENTICATION_VALUE_LOG, c$c1222_authentication_value_log);
     delete c$c1222_authentication_value_log;
+}
+
+function emit_c1222_user_information_log(c: connection) {
+    if (! c?$c1222_user_information_log )
+        return;
+    Log::write(C1222::LOG_USER_INFORMATION_LOG, c$c1222_user_information_log);
+    delete c$c1222_user_information_log;
 }
 
 function emit_c1222_identification_service_log(c: connection) {

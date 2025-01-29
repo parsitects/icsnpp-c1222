@@ -39,14 +39,29 @@ export {
         c1221_resp: string &optional &log;
     };
 
-    #user data
-        #indirect reference encoding
-        #padding
-        #mac
-        #epsem control
-        #ed class
-        #encrypted epsem
-        #services
+    type user_information_epsem_control_log : record {
+        responseControl: count &optional;
+        securityMode: count &optional;
+        edClassIncluded: count &optional;
+        proxyServiceUsed: count &optional;
+        recoverySession: count &optional;
+    };
+
+    ## Record type containing the column fields of the summary c12.22 log.
+    type user_information_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        indirect_reference_encoding: int &optional &log;
+        padding: string &optional &log;
+        mac: string &optional &log;
+        epsem_control: user_information_epsem_control_log &optional &log;
+        ed_class: string &optional &log;
+        encrypted_epsem: string &optional &log;
+        services: vector of string &optional &log;
+    };
 
     #Record type containing the column fields of the Identification service c12.22 log.
     type identification_service_log: record {

@@ -18,6 +18,15 @@ hook set_authentication_value_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_user_information_log(c: connection) {
+    if ( ! c?$c1222_user_information_log )
+        c$c1222_user_information_log = user_information_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 hook set_identification_service_log(c: connection) {
     if (! c?$c1222_identification_service_log)
         c$c1222_identification_service_log = identification_service_log(
@@ -41,6 +50,179 @@ function getIdString(ID: Zeek_C1222::ID): string{
     return returnVal;
 }
 
+function getServiceVectorLog(services: vector of Zeek_C1222::EpsemService): vector of string {
+    local service_vector: vector of string;
+
+    for (i, item in services) {
+
+        switch item$service$serviceTag {
+        case C1222::RequestResponseCodes_ERR:
+            service_vector += "Resp:ERR";
+            break;
+        case C1222::RequestResponseCodes_OK:
+            service_vector += "Resp:OK";
+            break;
+        case C1222::RequestResponseCodes_SNS:
+            service_vector += "Resp:SNS";
+            break;
+        case C1222::RequestResponseCodes_ISC:
+            service_vector += "Resp:ISC";
+            break;
+        case C1222::RequestResponseCodes_ONP:
+            service_vector += "Resp:ONP";
+            break;
+        case C1222::RequestResponseCodes_IAR:
+            service_vector += "Resp:IAR";
+            break;
+        case C1222::RequestResponseCodes_BSY:
+            service_vector += "Resp:BSY";
+            break;
+        case C1222::RequestResponseCodes_DNR:
+            service_vector += "Resp:DNR";
+            break;
+        case C1222::RequestResponseCodes_DLK:
+            service_vector += "Resp:DLK";
+            break;
+        case C1222::RequestResponseCodes_RNO:
+            service_vector += "Resp:RNO";
+            break;
+        case C1222::RequestResponseCodes_ISSS:
+            service_vector += "Resp:ISSS";
+            break;
+        case C1222::RequestResponseCodes_SME:
+            service_vector += "Resp:SME";
+            break;
+        case C1222::RequestResponseCodes_UAT:
+            service_vector += "Resp:UAT";
+            break;
+        case C1222::RequestResponseCodes_NETT:
+            service_vector += "Resp:NETT";
+            break;
+        case C1222::RequestResponseCodes_NETR:
+            service_vector += "Resp:NETR";
+            break;
+        case C1222::RequestResponseCodes_RQTL:
+            service_vector += "Resp:RQTL";
+            break;
+        case C1222::RequestResponseCodes_RSTL:
+            service_vector += "Resp:RSTL";
+            break;
+        case C1222::RequestResponseCodes_SGNP:
+            service_vector += "Resp:SGNP";
+            break;
+        case C1222::RequestResponseCodes_SGERR:
+            service_vector += "Resp:SGERR";
+            break;
+        case C1222::RequestResponseCodes_IDENT:
+            service_vector += "Req:IDENT";
+            break;
+        case C1222::RequestResponseCodes_FULLREAD:
+            service_vector += "Req:FULLREAD";
+            break;
+        case C1222::RequestResponseCodes_PREADONE:
+            service_vector += "Req:PARTIAL_READ_1";
+            break;
+        case C1222::RequestResponseCodes_PREADTWO:
+            service_vector += "Req:PARTIAL_READ_2";
+            break;
+        case C1222::RequestResponseCodes_PREADTHREE:
+            service_vector += "Req:PARTIAL_READ_3";
+            break;
+        case C1222::RequestResponseCodes_PREADFOUR:
+            service_vector += "Req:PARTIAL_READ_4";
+            break;
+        case C1222::RequestResponseCodes_PREADFIVE:
+            service_vector += "Req:PARTIAL_READ_5";
+            break;
+        case C1222::RequestResponseCodes_PREADSIX:
+            service_vector += "Req:PARTIAL_READ_6";
+            break;
+        case C1222::RequestResponseCodes_PREADSEVEN:
+            service_vector += "Req:PARTIAL_READ_7";
+            break;
+        case C1222::RequestResponseCodes_PREADEIGHT:
+            service_vector += "Req:PARTIAL_READ_8";
+            break;
+        case C1222::RequestResponseCodes_PREADNINE:
+            service_vector += "Req:PARTIAL_READ_9";
+            break;
+        case C1222::RequestResponseCodes_PREADDEFAULT:
+            service_vector += "Req:PARTIAL_READ_DEFAULT";
+            break;
+        case C1222::RequestResponseCodes_PREADOFFSET:
+            service_vector += "Req:PARTIAL_READ_OFFSET";
+            break;
+        case C1222::RequestResponseCodes_FULLWRITE:
+            service_vector += "Req:FULLWRITE";
+            break;
+        case C1222::RequestResponseCodes_PWRITEONE:
+            service_vector += "Req:PARTIAL_PARTIAL_1";
+            break;
+        case C1222::RequestResponseCodes_PWRITETWO:
+            service_vector += "Req:PARTIAL_PARTIAL_2";
+            break;
+        case C1222::RequestResponseCodes_PWRITETHREE:
+            service_vector += "Req:PARTIAL_PARTIAL_3";
+            break;
+        case C1222::RequestResponseCodes_PWRITEFOUR:
+            service_vector += "Req:PARTIAL_PARTIAL_4";
+            break;
+        case C1222::RequestResponseCodes_PWRITEFIVE:
+            service_vector += "Req:PARTIAL_PARTIAL_5";
+            break;
+        case C1222::RequestResponseCodes_PWRITESIX:
+            service_vector += "Req:PARTIAL_PARTIAL_6";
+            break;
+        case C1222::RequestResponseCodes_PWRITESEVEN:
+            service_vector += "Req:PARTIAL_PARTIAL_7";
+            break;
+        case C1222::RequestResponseCodes_PWRITEEIGHT:
+            service_vector += "Req:PARTIAL_PARTIAL_8";
+            break;
+        case C1222::RequestResponseCodes_PWRITENINE:
+            service_vector += "Req:PARTIAL_PARTIAL_9";
+            break;
+        case C1222::RequestResponseCodes_PWRITEOFFSET:
+            service_vector += "Req:PARTIAL_PARTIAL_OFFSET";
+            break;
+        case C1222::RequestResponseCodes_LOGON:
+            service_vector += "Req:LOGON";
+            break;
+        case C1222::RequestResponseCodes_SECURITY:
+            service_vector += "Req:SECURITY";
+            break;
+        case C1222::RequestResponseCodes_LOGOFF:
+            service_vector += "Req:LOGOFF";
+            break;
+        case C1222::RequestResponseCodes_TERMINATE:
+            service_vector += "Req:TERMINATE";
+            break;
+        case C1222::RequestResponseCodes_DISCONNECT:
+            service_vector += "Req:DISCONNECT";
+            break;
+        case C1222::RequestResponseCodes_WAIT:
+            service_vector += "Req:WAIT";
+            break;
+        case C1222::RequestResponseCodes_REGISTER:
+            service_vector += "Req:REGISTER";
+            break;
+        case C1222::RequestResponseCodes_DEREGISTER:
+            service_vector += "Req:DEREGISTER";
+            break;
+        case C1222::RequestResponseCodes_RESOLVE:
+            service_vector += "Req:RESOLVE";
+            break;
+        case C1222::RequestResponseCodes_TRACE:
+            service_vector += "Req:TRACE";
+            break;
+        default:
+            service_vector += "Unknown Service";
+            break;
+        }
+    }
+
+    return service_vector;
+}
 
 event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu) {
     hook set_session_summary_log(c);
@@ -146,178 +328,10 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
 
     #service codes
     if(ascepdu$elements[elementcount -1]$userInformation$epsem?$data){
-        local service_vector: vector of string;
+        local services = ascepdu$elements[elementcount -1]$userInformation$epsem$data$data;
+        local service_vector_log = getServiceVectorLog(services);
 
-        
-        for(i,item in ascepdu$elements[elementcount -1]$userInformation$epsem$data$data){
-
-            switch item$service$serviceTag {
-            case C1222::RequestResponseCodes_ERR:
-                service_vector += "Resp:ERR";
-                break;
-            case C1222::RequestResponseCodes_OK:
-                service_vector += "Resp:OK";
-                break;
-            case C1222::RequestResponseCodes_SNS:
-                service_vector += "Resp:SNS";
-                break;
-            case C1222::RequestResponseCodes_ISC:
-                service_vector += "Resp:ISC";
-                break;
-            case C1222::RequestResponseCodes_ONP:
-                service_vector += "Resp:ONP";
-                break;
-            case C1222::RequestResponseCodes_IAR:
-                service_vector += "Resp:IAR";
-                break;
-            case C1222::RequestResponseCodes_BSY:
-                service_vector += "Resp:BSY";
-                break;
-            case C1222::RequestResponseCodes_DNR:
-                service_vector += "Resp:DNR";
-                break;
-            case C1222::RequestResponseCodes_DLK:
-                service_vector += "Resp:DLK";
-                break;
-            case C1222::RequestResponseCodes_RNO:
-                service_vector += "Resp:RNO";
-                break;
-            case C1222::RequestResponseCodes_ISSS:
-                service_vector += "Resp:ISSS";
-                break;
-            case C1222::RequestResponseCodes_SME:
-                service_vector += "Resp:SME";
-                break;
-            case C1222::RequestResponseCodes_UAT:
-                service_vector += "Resp:UAT";
-                break;
-            case C1222::RequestResponseCodes_NETT:
-                service_vector += "Resp:NETT";
-                break;
-            case C1222::RequestResponseCodes_NETR:
-                service_vector += "Resp:NETR";
-                break;
-            case C1222::RequestResponseCodes_RQTL:
-                service_vector += "Resp:RQTL";
-                break;
-            case C1222::RequestResponseCodes_RSTL:
-                service_vector += "Resp:RSTL";
-                break;
-            case C1222::RequestResponseCodes_SGNP:
-                service_vector += "Resp:SGNP";
-                break;
-            case C1222::RequestResponseCodes_SGERR:
-                service_vector += "Resp:SGERR";
-                break;
-            case C1222::RequestResponseCodes_IDENT:
-                service_vector += "Req:IDENT";
-                break;
-            case C1222::RequestResponseCodes_FULLREAD:
-                service_vector += "Req:FULLREAD";
-                break;
-            case C1222::RequestResponseCodes_PREADONE:
-                service_vector += "Req:PARTIAL_READ_1";
-                break;
-            case C1222::RequestResponseCodes_PREADTWO:
-                service_vector += "Req:PARTIAL_READ_2";
-                break;
-            case C1222::RequestResponseCodes_PREADTHREE:
-                service_vector += "Req:PARTIAL_READ_3";
-                break;
-            case C1222::RequestResponseCodes_PREADFOUR:
-                service_vector += "Req:PARTIAL_READ_4";
-                break;
-            case C1222::RequestResponseCodes_PREADFIVE:
-                service_vector += "Req:PARTIAL_READ_5";
-                break;
-            case C1222::RequestResponseCodes_PREADSIX:
-                service_vector += "Req:PARTIAL_READ_6";
-                break;
-            case C1222::RequestResponseCodes_PREADSEVEN:
-                service_vector += "Req:PARTIAL_READ_7";
-                break;
-            case C1222::RequestResponseCodes_PREADEIGHT:
-                service_vector += "Req:PARTIAL_READ_8";
-                break;
-            case C1222::RequestResponseCodes_PREADNINE:
-                service_vector += "Req:PARTIAL_READ_9";
-                break;
-            case C1222::RequestResponseCodes_PREADDEFAULT:
-                service_vector += "Req:PARTIAL_READ_DEFAULT";
-                break;
-            case C1222::RequestResponseCodes_PREADOFFSET:
-                service_vector += "Req:PARTIAL_READ_OFFSET";
-                break;
-            case C1222::RequestResponseCodes_FULLWRITE:
-                service_vector += "Req:FULLWRITE";
-                break;
-            case C1222::RequestResponseCodes_PWRITEONE:
-                service_vector += "Req:PARTIAL_PARTIAL_1";
-                break;
-            case C1222::RequestResponseCodes_PWRITETWO:
-                service_vector += "Req:PARTIAL_PARTIAL_2";
-                break;
-            case C1222::RequestResponseCodes_PWRITETHREE:
-                service_vector += "Req:PARTIAL_PARTIAL_3";
-                break;
-            case C1222::RequestResponseCodes_PWRITEFOUR:
-                service_vector += "Req:PARTIAL_PARTIAL_4";
-                break;
-            case C1222::RequestResponseCodes_PWRITEFIVE:
-                service_vector += "Req:PARTIAL_PARTIAL_5";
-                break;
-            case C1222::RequestResponseCodes_PWRITESIX:
-                service_vector += "Req:PARTIAL_PARTIAL_6";
-                break;
-            case C1222::RequestResponseCodes_PWRITESEVEN:
-                service_vector += "Req:PARTIAL_PARTIAL_7";
-                break;
-            case C1222::RequestResponseCodes_PWRITEEIGHT:
-                service_vector += "Req:PARTIAL_PARTIAL_8";
-                break;
-            case C1222::RequestResponseCodes_PWRITENINE:
-                service_vector += "Req:PARTIAL_PARTIAL_9";
-                break;
-            case C1222::RequestResponseCodes_PWRITEOFFSET:
-                service_vector += "Req:PARTIAL_PARTIAL_OFFSET";
-                break;
-            case C1222::RequestResponseCodes_LOGON:
-                service_vector += "Req:LOGON";
-                break;
-            case C1222::RequestResponseCodes_SECURITY:
-                service_vector += "Req:SECURITY";
-                break;
-            case C1222::RequestResponseCodes_LOGOFF:
-                service_vector += "Req:LOGOFF";
-                break;
-            case C1222::RequestResponseCodes_TERMINATE:
-                service_vector += "Req:TERMINATE";
-                break;
-            case C1222::RequestResponseCodes_DISCONNECT:
-                service_vector += "Req:DISCONNECT";
-                break;
-            case C1222::RequestResponseCodes_WAIT:
-                service_vector += "Req:WAIT";
-                break;
-            case C1222::RequestResponseCodes_REGISTER:
-                service_vector += "Req:REGISTER";
-                break;
-            case C1222::RequestResponseCodes_DEREGISTER:
-                service_vector += "Req:DEREGISTER";
-                break;
-            case C1222::RequestResponseCodes_RESOLVE:
-                service_vector += "Req:RESOLVE";
-                break;
-            case C1222::RequestResponseCodes_TRACE:
-                service_vector += "Req:TRACE";
-                break;
-            default:
-                service_vector += "Unknown Service";
-                break;
-            }
-        }
-
-        info_summary_log$services = service_vector;
+        info_summary_log$services = service_vector_log;
     }
     
 }
@@ -373,7 +387,37 @@ event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingaut
 
 
 event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek_C1222::UserInformation) {
-	;
+    hook set_user_information_log(c);
+
+    local user_info_log = c$c1222_user_information_log;
+    local user_info_value = userinformation;
+
+    if (user_info_value$indirectReference?$encoding) {
+        user_info_log$indirect_reference_encoding = user_info_value$indirectReference$encoding;
+    }
+
+    user_info_log$padding = user_info_value$footer$padding;
+    user_info_log$mac = user_info_value$footer$mac;
+    user_info_log$epsem_control = user_info_value$epsem$epsemControl;
+
+    #ed class
+    local edClassIncluded = user_info_value$epsem$epsemControl$edClassIncluded;
+
+    if (edClassIncluded == 1) {
+        user_info_log$ed_class = user_info_value$epsem$edClass;
+    }
+
+    #encypted epsem or services
+    local securityMode = user_info_value$epsem$epsemControl$securityMode;
+
+    if(securityMode == 2) { # it is encrypted
+        user_info_log$encrypted_epsem = user_info_value$epsem$encryptedEpsem;
+        #user_info_log$services = ; # can't get services unless decrypted
+    }
+    else {
+        local services = user_info_value$epsem$data$data;
+        user_info_log$services = getServiceVectorLog(services);
+    }
 }
 
 event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Service){
@@ -454,4 +498,5 @@ event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::Re
 event C1222::EndPacket(c: connection, is_orig: bool) {
     C1222::emit_c1222_summary_log(c);
     emit_c1222_authentication_value_log(c);
+    emit_c1222_user_information_log(c);
 }

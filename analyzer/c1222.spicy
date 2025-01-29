@@ -398,7 +398,20 @@ type UserInformation = unit {
 
 #- 5.3.4.11 <mac> Pg. 63 -------------------------------------------------------
 type UserInformationFooter = unit {
-    mac : bytes &eod;
+    var mac: bytes;
+    var padding: bytes;
+
+    data : bytes &eod;
+
+    on %finally {
+        local dataSize: uint64 = |self.data|;
+
+        if (dataSize > 4) {
+            self.padding = self.data.sub(0, dataSize - 4); # grab everything before the last four bytes
+        }
+
+        self.mac = self.data.sub(dataSize - 4, dataSize); # grab the last four bytes
+    }
 };
 
 #- 5.3.4.11 <user-information-indirect-reference> Pg. 62 -----------------------

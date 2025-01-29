@@ -398,7 +398,7 @@ type UserInformation = unit {
 
 #- 5.3.4.11 <mac> Pg. 63 -------------------------------------------------------
 type UserInformationFooter = unit {
-    var mac: bytes;
+    var mac: string;
     var padding: bytes;
 
     data : bytes &eod;
@@ -410,7 +410,8 @@ type UserInformationFooter = unit {
             self.padding = self.data.sub(0, dataSize - 4); # grab everything before the last four bytes
         }
 
-        self.mac = self.data.sub(dataSize - 4, dataSize); # grab the last four bytes
+        local macBytes: bytes = self.data.sub(dataSize - 4, dataSize); # grab the last four bytes
+        self.mac = bytesToHexString(macBytes); # convert to hex string
     }
 };
 
@@ -1009,4 +1010,33 @@ function popFront() : uint8{
     commandContext = commandContext.sub(1,size);
 
     return output;
+}
+
+# Retrieved from https://github.com/cisagov/icsnpp-ge-srtp/blob/8a3355da2072348b959152a74e1b7f9f59b9dbec/analyzer/ge_srtp_functions.spicy
+public function uintToHexString(data: uint64): string {
+    return "0x%02x" % data;
+}
+
+# Retrieved from https://github.com/cisagov/icsnpp-ge-srtp/blob/8a3355da2072348b959152a74e1b7f9f59b9dbec/analyzer/ge_srtp_functions.spicy
+public function bytesToHexString(data: bytes): string {
+    local bytesAsHexString : string;
+    local cnt : uint8;
+
+    cnt = 0;
+    bytesAsHexString = "";
+
+    for (byte in data) {
+        bytesAsHexString = bytesAsHexString + ("%02x" % byte);
+
+        ++cnt;
+        if (cnt >= 15) {
+            break;
+        }
+    }
+
+    if (cnt > 0) {
+        bytesAsHexString = "0x" + bytesAsHexString;
+    }
+
+    return bytesAsHexString;
 }

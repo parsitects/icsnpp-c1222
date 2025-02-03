@@ -800,13 +800,7 @@ type RegisterReq = unit{
         acceptConnections       : 7;
     };
 
-    deviceClass : RegisterReqDeviceClass[] &while=(self.lastDevice !=0) foreach{
-        if((self.deviceClass[self.count].a.done == 0) && (self.deviceClass[self.count].b.done == 0)
-        && (self.deviceClass[self.count].c.done == 0) && (self.deviceClass[self.count].d.done == 0)){
-            self.lastDevice = 1;
-        }
-        self.count = self.count + 1;
-    }
+    deviceClass : RelativeObjectIdentifier(4);
 
     apTitle  : ID;
 
@@ -817,27 +811,6 @@ type RegisterReq = unit{
     registrationPeriod  : bytes &size=3;
     myDomainPattern     : RegisterReqDomainPattern if(self.nodetype.myDomainPatternFlag == 1);
 
-};
-
-#- 5.3.2.4.10 Registration Service <device-class> Pg. 36 -----------------------
-type RegisterReqDeviceClass = unit{
-    
-    a: bitfield(8){
-        data: 0..6;
-        done: 7;
-    };
-    b: bitfield(8){
-        data: 0..6;
-        done: 7;
-    };
-    c: bitfield(8){
-        data: 0..6;
-        done: 7;
-    };
-    d: bitfield(8){
-        data: 0..6;
-        done: 7;
-    };
 };
 
 #- 5.3.2.4.10 Registration Service <my-domain-pattern> Pg. 37 ------------------

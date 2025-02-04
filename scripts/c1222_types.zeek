@@ -109,8 +109,9 @@ export {
         #request/response
         #time
 
-    #Registration
+    #Registration/Deregistration
         #request/response
+        #Service Type
         #node type
         #conneciton type
         #device class
@@ -123,10 +124,6 @@ export {
         #reg-delay
         #reg-period
         #reg-info
-
-    #Deregistration
-        #request/response
-        #ap title
 
     #resolve
         #request/response

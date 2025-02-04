@@ -107,10 +107,16 @@ export {
         resp_session_idle_timeout: int &optional &log;
     };
 
-    #Security
-        #request/response
-        #password
-        #userid
+    type security_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        password: string &optional &log;
+        user_id: int &optional &log;
+    };
 
     #Wait
         #request/response

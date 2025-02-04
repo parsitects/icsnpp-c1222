@@ -45,6 +45,15 @@ hook set_logon_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_security_service_log(c: connection) {
+    if (! c?$c1222_security_service_log)
+        c$c1222_security_service_log = security_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -438,11 +447,17 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
         local ident_log = c$c1222_identification_service_log;
         ident_log$req_resp = "Req";
     }
+    else if(service == C1222::RequestResponseCodes_SECURITY){
+        hook set_security_service_log(c);
+        local security_log = c$c1222_security_service_log;
+        security_log$req_resp = "Resp";
+    }
 }
 
 event C1222::EndService(c: connection, is_orig: bool){
     C1222::emit_c1222_identification_service_log(c);
     C1222::emit_c1222_logon_service_log(c);
+    C1222::emit_c1222_security_service_log(c);
 }
 
 #Ident Resp
@@ -523,6 +538,16 @@ event C1222::LogonResp(c: connection, is_orig: bool, resp: Zeek_C1222::LogonResp
     local logon_log = c$c1222_logon_service_log;
     logon_log$req_resp = "Resp";
     logon_log$resp_session_idle_timeout = resp$respSessionTimeout;
+}
+
+#Security Req
+event C1222::SecurityReq(c: connection, is_orig: bool, req: Zeek_C1222::SecurityReq) {
+    hook set_security_service_log(c);
+
+    local security_log = c$c1222_security_service_log;
+    security_log$req_resp = "Req";
+    security_log$password = req$password;
+    security_log$user_id = req$userid;
 }
 
 event C1222::EndPacket(c: connection, is_orig: bool) {

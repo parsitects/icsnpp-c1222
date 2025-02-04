@@ -36,6 +36,15 @@ hook set_identification_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_logon_service_log(c: connection) {
+    if (! c?$c1222_logon_service_log)
+        c$c1222_logon_service_log = logon_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -433,6 +442,7 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
 
 event C1222::EndService(c: connection, is_orig: bool){
     C1222::emit_c1222_identification_service_log(c);
+    C1222::emit_c1222_logon_service_log(c);
 }
 
 #Ident Resp
@@ -493,6 +503,26 @@ event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::Re
         }
     }
 
+}
+
+#Logon Req
+event C1222::LogonReq(c: connection, is_orig: bool, req: Zeek_C1222::LogonReq) {
+    hook set_logon_service_log(c);
+
+    local logon_log = c$c1222_logon_service_log;
+    logon_log$req_resp = "Req";
+    logon_log$user_id = req$userid;
+    logon_log$user = req$user;
+    logon_log$req_session_idle_timeout = req$reqSessionTimeout;
+}
+
+#Logon Resp
+event C1222::LogonResp(c: connection, is_orig: bool, resp: Zeek_C1222::LogonResp) {
+    hook set_logon_service_log(c);
+
+    local logon_log = c$c1222_logon_service_log;
+    logon_log$req_resp = "Resp";
+    logon_log$resp_session_idle_timeout = resp$respSessionTimeout;
 }
 
 event C1222::EndPacket(c: connection, is_orig: bool) {

@@ -93,12 +93,19 @@ export {
         #data
         #cksum
 
-    #Logon
-        #request/response
-        #userid
-        #user
-        #req-session-idle-timeout
-        #resp-session-idle-timeout
+    #Record type containing the column fields of the Logon service c12.22 log.
+    type logon_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        user_id: int &optional &log;
+        user: string &optional &log;
+        req_session_idle_timeout: int &optional &log;
+        resp_session_idle_timeout: int &optional &log;
+    };
 
     #Security
         #request/response

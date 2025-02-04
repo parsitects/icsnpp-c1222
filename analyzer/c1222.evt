@@ -126,3 +126,15 @@ on C1222::ResponseOkIdent -> event C1222::ResponseOkIdent(
     $is_orig,
     self
     );
+
+on C1222::LogonReq -> event C1222::LogonReq(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::LogonResp -> event C1222::LogonResp(
+    $conn,
+    $is_orig,
+    self
+    );

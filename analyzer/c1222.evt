@@ -60,7 +60,6 @@ export C1222::LogonResp as Zeek_C1222::LogonResp;
 export C1222::SecurityReq as Zeek_C1222::SecurityReq;
 export C1222::WaitReq as Zeek_C1222::WaitReq;
 export C1222::RegisterReq as Zeek_C1222::RegisterReq;
-export C1222::RegisterReqDeviceClass as Zeek_C1222::RegisterReqDeviceClass;
 export C1222::RegisterReqDomainPattern as Zeek_C1222::RegisterReqDomainPattern;
 export C1222::RegisterRespOk as Zeek_C1222::RegisterRespOk;
 export C1222::DeregisterReq as Zeek_C1222::DeregisterReq;

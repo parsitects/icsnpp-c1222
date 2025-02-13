@@ -45,6 +45,15 @@ hook set_logon_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_service_error_log(c: connection) {
+    if (! c?$c1222_service_error_log)
+        c$c1222_service_error_log = service_error_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -525,8 +534,29 @@ event C1222::LogonResp(c: connection, is_orig: bool, resp: Zeek_C1222::LogonResp
     logon_log$resp_session_idle_timeout = resp$respSessionTimeout;
 }
 
+#Error Resp
+event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222::ResponseNok) {
+    hook set_service_error_log(c);
+
+    local local_log = c$c1222_service_error_log;
+    #error_log$service = getServiceVectorLog(error_record$command);
+    #error_log$error_code = getServiceVectorLog(error_record$code);
+    if(error_record?$maxRequestSize){
+        local_log$rqtl_max_request_size = error_record$maxRequestSize;
+    }
+    if(error_record?$maxResponseSize){
+        local_log$rstl_max_response_size = error_record$maxResponseSize;
+    }
+    if(error_record?$sigerrResp){
+        local_log$sigerr_resp = error_record$sigerrResp;
+    }
+
+    #TODO: Add scripting to handle trace log on error
+}
+
 event C1222::EndPacket(c: connection, is_orig: bool) {
     C1222::emit_c1222_summary_log(c);
     emit_c1222_authentication_value_log(c);
     emit_c1222_user_information_log(c);
+    emit_c1222_service_error_log(c);
 }

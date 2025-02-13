@@ -36,6 +36,15 @@ hook set_identification_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_read_write_service_log(c: connection) {
+    if (! c?$c1222_read_write_service_log)
+        c$c1222_read_write_service_log = read_write_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 hook set_logon_service_log(c: connection) {
     if (! c?$c1222_logon_service_log)
         c$c1222_logon_service_log = logon_service_log(
@@ -441,21 +450,35 @@ event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek
 event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Service){
     local service = serviceType$serviceTag;
 
+    local read_write_log = c$c1222_read_write_service_log;
+
     #Ident Req
     if(service == C1222::RequestResponseCodes_IDENT){
         hook set_identification_service_log(c);
         local ident_log = c$c1222_identification_service_log;
         ident_log$req_resp = "Req";
     }
-    else if(service == C1222::RequestResponseCodes_SECURITY){
-        hook set_security_service_log(c);
-        local security_log = c$c1222_security_service_log;
-        security_log$req_resp = "Resp";
+    # This part needs fixed (can't handle resp)...
+    #else if(service == C1222::RequestResponseCodes_SECURITY){
+        #hook set_security_service_log(c);
+        #local security_log = c$c1222_security_service_log;
+        #security_log$req_resp = "Resp";
+    #}
+    else if(service == C1222::RequestResponseCodes_PREADDEFAULT){
+        hook set_read_write_service_log(c);
+        read_write_log$req_resp = "Req";
+        read_write_log$service_type = "pread-default";
+    }
+    else if(service == C1222::RequestResponseCodes_FULLREAD){
+        hook set_read_write_service_log(c);
+        read_write_log$req_resp = "Req";
+        read_write_log$service_type = "full-read";
     }
 }
 
 event C1222::EndService(c: connection, is_orig: bool){
     C1222::emit_c1222_identification_service_log(c);
+    C1222::emit_c1222_read_write_service_log(c);
     C1222::emit_c1222_logon_service_log(c);
     C1222::emit_c1222_security_service_log(c);
 }
@@ -549,6 +572,127 @@ event C1222::SecurityReq(c: connection, is_orig: bool, req: Zeek_C1222::Security
     security_log$password = req$password;
     security_log$user_id = req$userid;
 }
+
+# READ / WRITE SERVICE EVENTS -------------------------------------------------------------
+
+#ReadReqPRead
+event C1222::ReadReqPRead(c: connection, is_orig: bool, req: Zeek_C1222::ReadReqPRead) {
+    hook set_read_write_service_log(c);
+
+    local read_write_log = c$c1222_read_write_service_log;
+    read_write_log$req_resp = "Req";
+    read_write_log$service_type = "pread";
+    read_write_log$table_id = req$tableid;
+
+    # Display indices with decimals in between, ex: 3.1.1
+    for (i,indexN in req$index) {
+        if (i > 0) {
+            read_write_log$index += ".";
+        }
+
+        read_write_log$index += cat(indexN);
+    }
+
+    read_write_log$element_count = req$elementCount;
+}
+
+#ReadReqPReadOffset
+event C1222::ReadReqPReadOffset(c: connection, is_orig: bool, req: Zeek_C1222::ReadReqPReadOffset) {
+    hook set_read_write_service_log(c);
+
+    local read_write_log = c$c1222_read_write_service_log;
+    read_write_log$req_resp = "Req";
+    read_write_log$service_type = "pread-offset";
+    read_write_log$table_id = req$tableid;
+    read_write_log$offset = bytestring_to_count(req$offset);
+    read_write_log$octet_count = req$octetCount;
+}
+
+#ReadRespOk
+event C1222::ReadRespOk(c: connection, is_orig: bool, resp: Zeek_C1222::ReadRespOk) {
+    hook set_read_write_service_log(c);
+
+    local read_write_log = c$c1222_read_write_service_log;
+    read_write_log$req_resp = "Resp";
+    read_write_log$service_type = "readresp-ok";
+
+    for (i,tableM in resp$tables) {
+        read_write_log$count_m += tableM$count_m;
+        read_write_log$data += tableM$data;
+        read_write_log$chksum += tableM$cksum;
+    }
+
+    for (i,extraTable in resp$extratables) {
+        read_write_log$count_m += extraTable$count_m;
+        read_write_log$data += extraTable$data;
+        read_write_log$chksum += extraTable$cksum;
+    }
+}
+
+#WriteReqFull
+event C1222::WriteReqFull(c: connection, is_orig: bool, req: Zeek_C1222::WriteReqFull) {
+    hook set_read_write_service_log(c);
+
+    local read_write_log = c$c1222_read_write_service_log;
+    read_write_log$req_resp = "Req";
+    read_write_log$service_type = "full-write";
+    read_write_log$table_id = req$tableid;
+
+    local tableVal = req$table_m;
+    read_write_log$count_m += tableVal$count_m;
+    read_write_log$data += tableVal$data;
+    read_write_log$chksum += tableVal$cksum;
+
+    if (tableVal$count_m == 0xFFFF) { # extra table is valid
+        local extraTable = req$extra;
+
+        read_write_log$count_m += extraTable$count_m;
+        read_write_log$data += extraTable$data;
+        read_write_log$chksum += extraTable$cksum; # TODO: Is adding the checksum acceptable here?
+    }
+}
+
+#WriteReqPWrite
+event C1222::WriteReqPWrite(c: connection, is_orig: bool, req: Zeek_C1222::WriteReqPWrite) {
+    hook set_read_write_service_log(c);
+
+    local read_write_log = c$c1222_read_write_service_log;
+    read_write_log$req_resp = "Req";
+    read_write_log$service_type = "pwrite";
+    read_write_log$table_id = req$tableid;
+
+    # Display indices with decimals in between, ex: 3.1.1
+    for (i,indexN in req$index) {
+        if (i > 0) {
+            read_write_log$index += ".";
+        }
+
+        read_write_log$index += cat(indexN);
+    }
+
+    local tableVal = req$table_m;
+    read_write_log$count_m += tableVal$count_m;
+    read_write_log$data += tableVal$data;
+    read_write_log$chksum += tableVal$cksum;
+}
+
+#WriteReqOffset
+event C1222::WriteReqOffset(c: connection, is_orig: bool, req: Zeek_C1222::WriteReqOffset) {
+    hook set_read_write_service_log(c);
+
+    local read_write_log = c$c1222_read_write_service_log;
+    read_write_log$req_resp = "Req";
+    read_write_log$service_type = "pwrite-offset";
+    read_write_log$table_id = req$tableid;
+    read_write_log$offset = bytestring_to_count(req$offset); 
+    
+    local tableVal = req$table_m;
+    read_write_log$count_m += tableVal$count_m;
+    read_write_log$data += tableVal$data;
+    read_write_log$chksum += tableVal$cksum;
+}
+
+# END PACKET ------------------------------------------------------------------------------
 
 event C1222::EndPacket(c: connection, is_orig: bool) {
     C1222::emit_c1222_summary_log(c);

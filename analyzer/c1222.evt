@@ -143,3 +143,41 @@ on C1222::SecurityReq -> event C1222::SecurityReq(
     $is_orig,
     self
     );
+
+# Read/Write Service Events
+
+on C1222::ReadReqPRead -> event C1222::ReadReqPRead(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::ReadReqPReadOffset -> event C1222::ReadReqPReadOffset(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::ReadRespOk -> event C1222::ReadRespOk(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::WriteReqFull -> event C1222::WriteReqFull(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::WriteReqPWrite -> event C1222::WriteReqPWrite(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::WriteReqOffset -> event C1222::WriteReqOffset(
+    $conn,
+    $is_orig,
+    self
+    );

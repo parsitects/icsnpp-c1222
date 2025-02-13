@@ -708,7 +708,7 @@ type ReadRespOk = unit(count: uint64){
     var extracount  : uint64 = 0;
     var i           : uint64 = 0;
     tables          : TableData[count] foreach{
-        if(self.tables[self.i].count == 0xFFFF){
+        if(self.tables[self.i].count_m == 0xFFFF){
             self.extracount = self.extracount + 1;
         }
         self.i = self.i + 1;
@@ -719,30 +719,30 @@ type ReadRespOk = unit(count: uint64){
 #- 5.3.2.4.2 Read Service <table-data> Pg. 26 ----------------------------------
 # Same structure for write service as well.
 type TableData = unit {
-    count   : uint16;                  #need to handle when count == 0 pending length sent.
-    data    : bytes &size=self.count;
+    count_m   : uint16;                  #need to handle when count == 0 pending length sent.
+    data    : bytes &size=self.count_m;
     cksum   : uint8;
 };
 
 #- 5.3.2.4.3 Write Service <full-write> Pg. 27 ---------------------------------
 type WriteReqFull = unit{
     tableid : uint16;
-    table   : TableData;
-    extra   : TableData if(self.table.count == 0xFFFF);
+    table_m   : TableData;
+    extra   : TableData if(self.table_m.count_m == 0xFFFF);
 };
 
 #- 5.3.2.4.3 Write Service <pwrite-index> Pg. 27 --------------------------------
 type WriteReqPWrite = unit(count: uint64){
     tableid : uint16;
     index   : uint16[count];
-    table   : TableData;
+    table_m   : TableData;
 };
 
 #- 5.3.2.4.3 Write Service <pwrite-offset> Pg. 27 ------------------------------
 type WriteReqOffset = unit{
     tableid : uint16;
     offset  : bytes &size=3;
-    table   : TableData;
+    table_m   : TableData;
 };
 
 #- 5.3.2.4.4 Logon Service <logon> Pg. 28 --------------------------------------

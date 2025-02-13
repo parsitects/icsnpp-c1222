@@ -473,6 +473,7 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
         hook set_read_write_service_log(c);
         read_write_log$req_resp = "Req";
         read_write_log$service_type = "full-read";
+        read_write_log$table_id = serviceType$fullread;
     }
 }
 

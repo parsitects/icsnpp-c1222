@@ -538,17 +538,17 @@ event C1222::LogonResp(c: connection, is_orig: bool, resp: Zeek_C1222::LogonResp
 event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222::ResponseNok) {
     hook set_service_error_log(c);
 
-    local local_log = c$c1222_service_error_log;
-    #error_log$service = getServiceVectorLog(error_record$command);
+    local error_log = c$c1222_service_error_log;
+    #error_log$service = C1222::REQUEST_RESPONSE_CODES[error_record$command];
     #error_log$error_code = getServiceVectorLog(error_record$code);
     if(error_record?$maxRequestSize){
-        local_log$rqtl_max_request_size = error_record$maxRequestSize;
+        error_log$rqtl_max_request_size = error_record$maxRequestSize;
     }
     if(error_record?$maxResponseSize){
-        local_log$rstl_max_response_size = error_record$maxResponseSize;
+        error_log$rstl_max_response_size = error_record$maxResponseSize;
     }
     if(error_record?$sigerrResp){
-        local_log$sigerr_resp = error_record$sigerrResp;
+        error_log$sigerr_resp = error_record$sigerrResp;
     }
 
     #TODO: Add scripting to handle trace log on error

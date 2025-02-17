@@ -633,7 +633,7 @@ type ResponseNok = unit(code: RequestResponseCodes, len: uint64){
     maxResponseSize : uint32 if(code == RequestResponseCodes::RSTL);
     sigerrResp      : bytes &size=self.actualLength if(code == RequestResponseCodes::SGERR);
 
-    trace           : Trace(self.actualLength) if((RequestResponseCodes(commandContext.front()) == RequestResponseCodes::TRACE ) && (code != RequestResponseCodes::SGERR));
+    trace           : Trace(self.actualLength) if((self.command == RequestResponseCodes::TRACE ) && (code != RequestResponseCodes::SGERR));
 
     on maxRequestSize{
         if(code == RequestResponseCodes::RQTL){

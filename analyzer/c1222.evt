@@ -137,3 +137,9 @@ on C1222::LogonResp -> event C1222::LogonResp(
     $is_orig,
     self
     );
+
+on C1222::ResponseNok -> event C1222::ResponseNok(
+    $conn,
+    $is_orig,
+    self
+    );

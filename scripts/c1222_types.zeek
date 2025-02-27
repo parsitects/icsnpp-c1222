@@ -82,16 +82,24 @@ export {
         device_identity: string &optional &log;
     };
 
-    #Read/write
-        #request/response
-        #service type
-        #tableid
-        #offset
-        #index
-        #element count
-        #count
-        #data
-        #cksum
+    #Record type containing the column fields of the Read Write service c12.22 log.
+    type read_write_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        service_type: string &optional &log;
+        table_id: int &optional &log;
+        offset: count &optional &log;
+        index: string &optional &log;
+        element_count: int &optional &log;
+        count_m: vector of int &optional &log;
+        data: vector of string &optional &log;
+        chksum: vector of int &optional &log;
+        octet_count: int &optional &log;
+    };
 
     #Record type containing the column fields of the Logon service c12.22 log.
     type logon_service_log: record {
@@ -107,10 +115,16 @@ export {
         resp_session_idle_timeout: int &optional &log;
     };
 
-    #Security
-        #request/response
-        #password
-        #userid
+    type security_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        password: string &optional &log;
+        user_id: int &optional &log;
+    };
 
     #Wait
         #request/response

@@ -1,14 +1,6 @@
 import C1222;
+import C1222_ENUMS;
 import Zeek_C1222;
-
-#Enums
-export C1222::AsceElementTags as Zeek_C1222::AsceElementTags;
-export C1222::IdentifierTags as Zeek_C1222::IdentifierTags;
-export C1222::EncodingTags as Zeek_C1222::EncodingTags;
-export C1222::EncodingASN1Tags as Zeek_C1222::EncodingASN1Tags;
-export C1222::EncodingC1221Tags as Zeek_C1222::EncodingC1221Tags;
-export C1222::RequestResponseCodes as Zeek_C1222::RequestResponseCodes;
-export C1222::IdentFeatureTags as Zeek_C1222::IdentFeatureTags;
 
 #ASCE Units
 export C1222::Message as Zeek_C1222::Message;
@@ -138,7 +130,45 @@ on C1222::LogonResp -> event C1222::LogonResp(
     self
     );
 
-on C1222::ResponseNok -> event C1222::ResponseNok(
+on C1222::SecurityReq -> event C1222::SecurityReq(
+    $conn,
+    $is_orig,
+    self
+    );
+
+# Read/Write Service Events
+
+on C1222::ReadReqPRead -> event C1222::ReadReqPRead(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::ReadReqPReadOffset -> event C1222::ReadReqPReadOffset(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::ReadRespOk -> event C1222::ReadRespOk(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::WriteReqFull -> event C1222::WriteReqFull(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::WriteReqPWrite -> event C1222::WriteReqPWrite(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::WriteReqOffset -> event C1222::WriteReqOffset(
     $conn,
     $is_orig,
     self

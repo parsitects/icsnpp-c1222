@@ -17,6 +17,8 @@ module C1222;
 
 
 import spicy;
+import C1222_ENUMS;
+import C1222_FUNCTIONS;
 
 ################################################################################
 ## Global Variables
@@ -28,125 +30,22 @@ import spicy;
 # 0 = none
 # 1 = c1221
 # 2 = c1222
-global authSetting: uint8 = 0;
+public global authSetting: uint8 = 0;
 
 
 #- Encrypted Status ------------------------------------------------------------
 # Used to keep track if EPSEM data is encrypted.
 # Gathered from 5.3.3 epsem-control bit 2 to 3.
-global isEncrypted: bool = False;
+public global isEncrypted: bool = False;
 
 
 #- Command Context -------------------------------------------------------------
 # Used to provide EPSEM reponses context on the request made prior.
-global commandContext : vector<uint8>;
+public global commandContext : vector<uint8>;
 
 #- Session Context -------------------------------------------------------------
 # Used to determine if a EPSEM session is established
-global sessionContext: uint8;
-
-################################################################################
-## Enums
-################################################################################
-
-type AsceElementTags = enum {
-    APPLICATION_CONTEXT                     = 0xA1,
-    CALLED_AP_TITLE                         = 0xA2,
-    CALLED_AP_INVOCATION_ID                 = 0xA4,
-    CALLING_AP_TITLE                        = 0xA6,
-    CALLING_APPLICATION_ENTITY_QUALIFIER    = 0xA7,
-    CALLING_AP_INVOCATION_ID                = 0xA8,
-    CALLING_AUTHENTICATION_VALUE            = 0xAC,
-    MECHANISM_NAME                          = 0x8B,
-    USER_INFORMATION                        = 0xBE
-
-};
-
-type IdentifierTags = enum {
-    UNIVERSAL   = 0x06,
-    RELATIVE    = 0x80
-};
-
-type EncodingTags = enum {
-    ASN1    = 0xA0,
-    OCTET   = 0x81
-};
-
-type EncodingASN1Tags = enum {
-    C1222 = 0xA1,
-    C1221 = 0xA0,
-
-};
-
-type EncodingC1221Tags = enum {
-    IDENT       = 0x80,
-    REQUEST     = 0x81,
-    RESPONSE    = 0x82
-};
-
-type RequestResponseCodes = enum {
-    OK              = 0x00,
-    ERR             = 0x01,
-    SNS             = 0x02,
-    ISC             = 0x03,
-    ONP             = 0x04,
-    IAR             = 0x05,
-    BSY             = 0x06,
-    DNR             = 0x07,
-    DLK             = 0x08,
-    RNO             = 0x09,
-    ISSS            = 0x0A,
-    SME             = 0x0B,
-    UAT             = 0x0C,
-    NETT            = 0x0D,
-    NETR            = 0x0E,
-    RQTL            = 0x0F,
-    RSTL            = 0x10,
-    SGNP            = 0x11,
-    SGERR           = 0x12,
-    IDENT           = 0x20,
-    FULLREAD        = 0x30,
-    PREADONE        = 0x31,
-    PREADTWO        = 0x32,
-    PREADTHREE      = 0x33,
-    PREADFOUR       = 0x34,
-    PREADFIVE       = 0x35,
-    PREADSIX        = 0x36,
-    PREADSEVEN      = 0x37,
-    PREADEIGHT      = 0x38,
-    PREADNINE       = 0x39,
-    PREADDEFAULT    = 0x3E,
-    PREADOFFSET     = 0x3F,
-    FULLWRITE       = 0x40,
-    PWRITEONE       = 0x41,
-    PWRITETWO       = 0x42,
-    PWRITETHREE     = 0x43,
-    PWRITEFOUR      = 0x44,
-    PWRITEFIVE      = 0x45,
-    PWRITESIX       = 0x46,
-    PWRITESEVEN     = 0x47,
-    PWRITEEIGHT     = 0x48,
-    PWRITENINE      = 0x49,
-    PWRITEOFFSET    = 0x4F,
-    LOGON           = 0x50,
-    SECURITY        = 0x51,
-    LOGOFF          = 0x52,
-    TERMINATE       = 0x21,
-    DISCONNECT      = 0x22,
-    WAIT            = 0x70,
-    REGISTER        = 0x27,
-    DEREGISTER      = 0x24,
-    RESOLVE         = 0x25,
-    TRACE           = 0x26
-};
-
-
-type IdentFeatureTags = enum {
-    SECURITY_MECHANISM  = 0x04,
-    SESSION_CTRL        = 0x05,
-    DEVICE_CLASS        = 0x06,
-    DEVICE_IDENTITY     = 0x07
-};
+public global sessionContext: uint8;
 
 
 ################################################################################
@@ -179,18 +78,18 @@ type AscePdu = unit {
 
 #- 5.3.4 <elements> Pg. 49 -----------------------------------------------------
 type Element = unit {
-    tag : uint8 &convert=AsceElementTags($$);
+    tag : uint8 &convert=C1222_ENUMS::AsceElementTags($$);
 
     switch (self.tag) {
-        AsceElementTags::APPLICATION_CONTEXT                    -> applicationContext : ApplicationContext;
-        AsceElementTags::CALLED_AP_TITLE                        -> calledApTitle : CalledApTitle;
-        AsceElementTags::CALLED_AP_INVOCATION_ID                -> calledApInvocationId : CalledApInvocationID;
-        AsceElementTags::CALLING_AP_TITLE                       -> callingApTitle : CallingAPTitle;
-        AsceElementTags::CALLING_APPLICATION_ENTITY_QUALIFIER   -> callingApplicationEntityQualifier : CallingApplicationEntityQualifier;
-        AsceElementTags::CALLING_AP_INVOCATION_ID               -> callingApInvocationId : CallingAPInvocationID;
-        AsceElementTags::CALLING_AUTHENTICATION_VALUE           -> callingAuthenticationValue : CallingAuthenticationValue;
-        AsceElementTags::MECHANISM_NAME                         -> mechanismName : MechanismName;
-        AsceElementTags::USER_INFORMATION                       -> userInformation : UserInformation;
+        C1222_ENUMS::AsceElementTags::APPLICATION_CONTEXT                    -> applicationContext : ApplicationContext;
+        C1222_ENUMS::AsceElementTags::CALLED_AP_TITLE                        -> calledApTitle : CalledApTitle;
+        C1222_ENUMS::AsceElementTags::CALLED_AP_INVOCATION_ID                -> calledApInvocationId : CalledApInvocationID;
+        C1222_ENUMS::AsceElementTags::CALLING_AP_TITLE                       -> callingApTitle : CallingAPTitle;
+        C1222_ENUMS::AsceElementTags::CALLING_APPLICATION_ENTITY_QUALIFIER   -> callingApplicationEntityQualifier : CallingApplicationEntityQualifier;
+        C1222_ENUMS::AsceElementTags::CALLING_AP_INVOCATION_ID               -> callingApInvocationId : CallingAPInvocationID;
+        C1222_ENUMS::AsceElementTags::CALLING_AUTHENTICATION_VALUE           -> callingAuthenticationValue : CallingAuthenticationValue;
+        C1222_ENUMS::AsceElementTags::MECHANISM_NAME                         -> mechanismName : MechanismName;
+        C1222_ENUMS::AsceElementTags::USER_INFORMATION                       -> userInformation : UserInformation;
 
         * -> : NotImplemented();
 
@@ -242,11 +141,11 @@ type CallingAuthenticationValue = unit {
     externalTag         : uint8;
     eternalLen          : LengthType;
     indirectReference   : CAVIndirectRef &try;
-    encodingTag         : uint8 &convert=EncodingTags($$);
+    encodingTag         : uint8 &convert=C1222_ENUMS::EncodingTags($$);
 
     switch (self.encodingTag){
-        EncodingTags::ASN1  -> singleAsn1   : CAVSingleAsn1;
-        EncodingTags::OCTET -> octetAligned : CAVOctetAligned;
+        C1222_ENUMS::EncodingTags::ASN1  -> singleAsn1   : CAVSingleAsn1;
+        C1222_ENUMS::EncodingTags::OCTET -> octetAligned : CAVOctetAligned;
 
         * -> : NotImplemented();
     };
@@ -277,11 +176,11 @@ type CAVIndirectRef = unit {
 #- 5.3.4.8 <calling-authentication-value-single-asn1> Pg. 53 -------------------
 type CAVSingleAsn1 = unit {
     len             : LengthType;
-    mechanismTag    : uint8 &convert=EncodingASN1Tags($$);
+    mechanismTag    : uint8 &convert=C1222_ENUMS::EncodingASN1Tags($$);
 
     switch (self.mechanismTag){
-        EncodingASN1Tags::C1222 -> c1222Encoding: CallingAuthValC1222;
-        EncodingASN1Tags::C1221 -> c1221Encoding: CallingAuthValC1221;
+        C1222_ENUMS::EncodingASN1Tags::C1222 -> c1222Encoding: CallingAuthValC1222;
+        C1222_ENUMS::EncodingASN1Tags::C1221 -> c1221Encoding: CallingAuthValC1221;
         
         #undefined encoding
         * -> unimplementedValue: bytes &size=self.len.len - 1;
@@ -319,12 +218,12 @@ type IV = unit {
 #- 5.3.4.8.2 <calling-authentication-value-c1221> Pg. 57 -----------------------
 type CallingAuthValC1221 = unit {
     len : LengthType;
-    msg : uint8 &convert=EncodingC1221Tags($$);
+    msg : uint8 &convert=C1222_ENUMS::EncodingC1221Tags($$);
 
     switch (self.msg){
-        EncodingC1221Tags::IDENT    -> authIdent: C1221AuthIdent;
-        EncodingC1221Tags::REQUEST  -> authReq  : C1221AuthReq;
-        EncodingC1221Tags::RESPONSE -> authResp : C1221AuthResp;
+        C1222_ENUMS::EncodingC1221Tags::IDENT    -> authIdent: C1221AuthIdent;
+        C1222_ENUMS::EncodingC1221Tags::REQUEST  -> authReq  : C1221AuthReq;
+        C1222_ENUMS::EncodingC1221Tags::RESPONSE -> authResp : C1221AuthResp;
         
         * -> : NotImplemented();
     };
@@ -411,7 +310,7 @@ type UserInformationFooter = unit {
         }
 
         local macBytes: bytes = self.data.sub(dataSize - 4, dataSize); # grab the last four bytes
-        self.mac = bytesToHexString(macBytes); # convert to hex string
+        self.mac = C1222_FUNCTIONS::bytesToHexString(macBytes); # convert to hex string
     }
 };
 
@@ -475,62 +374,62 @@ type EpsemService = unit() {
 };
 
 type Service = unit(len: uint64){
-    serviceTag: uint8 &convert=RequestResponseCodes($$);
+    serviceTag: uint8 &convert=C1222_ENUMS::RequestResponseCodes($$);
 
     switch (self.serviceTag){
-        RequestResponseCodes::OK            -> ok           : ResponseOk(len -1);
-        RequestResponseCodes::ERR           -> err          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::SNS           -> sns          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::ISC           -> isc          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::ONP           -> onp          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::IAR           -> iar          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::BSY           -> bsy          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::DNR           -> dnr          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::DLK           -> dlk          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::RNO           -> rno          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::ISSS          -> isss         : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::SME           -> sme          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::UAT           -> uat          : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::NETT          -> nett         : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::NETR          -> netr         : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::RQTL          -> rqtl         : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::RSTL          -> rstl         : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::SGNP          -> sgnp         : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::SGERR         -> sgerr        : ResponseNok(self.serviceTag, len-1);
-        RequestResponseCodes::IDENT         -> identify     : void;
-        RequestResponseCodes::FULLREAD      -> fullread     : uint16;
-        RequestResponseCodes::PREADONE      -> preadone     : ReadReqPRead(1);
-        RequestResponseCodes::PREADTWO      -> preadtwo     : ReadReqPRead(2);
-        RequestResponseCodes::PREADTHREE    -> preadthree   : ReadReqPRead(3);
-        RequestResponseCodes::PREADFOUR     -> preadfour    : ReadReqPRead(4);
-        RequestResponseCodes::PREADFIVE     -> preadfive    : ReadReqPRead(5);
-        RequestResponseCodes::PREADSIX      -> preadsix     : ReadReqPRead(6);
-        RequestResponseCodes::PREADSEVEN    -> preadseven   : ReadReqPRead(7);
-        RequestResponseCodes::PREADEIGHT    -> preadeight   : ReadReqPRead(8);
-        RequestResponseCodes::PREADNINE     -> preadnine    : ReadReqPRead(9);
-        RequestResponseCodes::PREADDEFAULT  -> preaddefault : void;
-        RequestResponseCodes::PREADOFFSET   -> preadoffset  : ReadReqPReadOffset;
-        RequestResponseCodes::FULLWRITE     -> fullwrite    : WriteReqFull;
-        RequestResponseCodes::PWRITEONE     -> pwriteone    : WriteReqPWrite(1);
-        RequestResponseCodes::PWRITETWO     -> pwritetwo    : WriteReqPWrite(2);
-        RequestResponseCodes::PWRITETHREE   -> pwritethree  : WriteReqPWrite(3);
-        RequestResponseCodes::PWRITEFOUR    -> pwritefour   : WriteReqPWrite(4);
-        RequestResponseCodes::PWRITEFIVE    -> pwritefive   : WriteReqPWrite(5);
-        RequestResponseCodes::PWRITESIX     -> pwritesix    : WriteReqPWrite(6);
-        RequestResponseCodes::PWRITESEVEN   -> pwriteseven  : WriteReqPWrite(7);
-        RequestResponseCodes::PWRITEEIGHT   -> pwriteeight  : WriteReqPWrite(8);
-        RequestResponseCodes::PWRITENINE    -> pwritenine   : WriteReqPWrite(9);
-        RequestResponseCodes::PWRITEOFFSET  -> pwriteoffset : WriteReqOffset;
-        RequestResponseCodes::LOGON         -> logon        : LogonReq;
-        RequestResponseCodes::SECURITY      -> security     : SecurityReq;
-        RequestResponseCodes::LOGOFF        -> logoff       : void;
-        RequestResponseCodes::TERMINATE     -> terminate    : void;
-        RequestResponseCodes::DISCONNECT    -> disconnect   : void;
-        RequestResponseCodes::WAIT          -> wait         : WaitReq;
-        RequestResponseCodes::REGISTER      -> register     : RegisterReq;
-        RequestResponseCodes::DEREGISTER    -> deregister   : DeregisterReq;
-        RequestResponseCodes::RESOLVE       -> resolve      : ResolveReq;
-        RequestResponseCodes::TRACE         -> trace        : Trace(len-1);
+        C1222_ENUMS::RequestResponseCodes::OK            -> ok           : ResponseOk(len -1);
+        C1222_ENUMS::RequestResponseCodes::ERR           -> err          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::SNS           -> sns          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::ISC           -> isc          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::ONP           -> onp          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::IAR           -> iar          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::BSY           -> bsy          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::DNR           -> dnr          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::DLK           -> dlk          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::RNO           -> rno          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::ISSS          -> isss         : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::SME           -> sme          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::UAT           -> uat          : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::NETT          -> nett         : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::NETR          -> netr         : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::RQTL          -> rqtl         : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::RSTL          -> rstl         : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::SGNP          -> sgnp         : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::SGERR         -> sgerr        : ResponseNok(self.serviceTag, len-1);
+        C1222_ENUMS::RequestResponseCodes::IDENT         -> identify     : void;
+        C1222_ENUMS::RequestResponseCodes::FULLREAD      -> fullread     : uint16;
+        C1222_ENUMS::RequestResponseCodes::PREADONE      -> preadone     : ReadReqPRead(1);
+        C1222_ENUMS::RequestResponseCodes::PREADTWO      -> preadtwo     : ReadReqPRead(2);
+        C1222_ENUMS::RequestResponseCodes::PREADTHREE    -> preadthree   : ReadReqPRead(3);
+        C1222_ENUMS::RequestResponseCodes::PREADFOUR     -> preadfour    : ReadReqPRead(4);
+        C1222_ENUMS::RequestResponseCodes::PREADFIVE     -> preadfive    : ReadReqPRead(5);
+        C1222_ENUMS::RequestResponseCodes::PREADSIX      -> preadsix     : ReadReqPRead(6);
+        C1222_ENUMS::RequestResponseCodes::PREADSEVEN    -> preadseven   : ReadReqPRead(7);
+        C1222_ENUMS::RequestResponseCodes::PREADEIGHT    -> preadeight   : ReadReqPRead(8);
+        C1222_ENUMS::RequestResponseCodes::PREADNINE     -> preadnine    : ReadReqPRead(9);
+        C1222_ENUMS::RequestResponseCodes::PREADDEFAULT  -> preaddefault : void;
+        C1222_ENUMS::RequestResponseCodes::PREADOFFSET   -> preadoffset  : ReadReqPReadOffset;
+        C1222_ENUMS::RequestResponseCodes::FULLWRITE     -> fullwrite    : WriteReqFull;
+        C1222_ENUMS::RequestResponseCodes::PWRITEONE     -> pwriteone    : WriteReqPWrite(1);
+        C1222_ENUMS::RequestResponseCodes::PWRITETWO     -> pwritetwo    : WriteReqPWrite(2);
+        C1222_ENUMS::RequestResponseCodes::PWRITETHREE   -> pwritethree  : WriteReqPWrite(3);
+        C1222_ENUMS::RequestResponseCodes::PWRITEFOUR    -> pwritefour   : WriteReqPWrite(4);
+        C1222_ENUMS::RequestResponseCodes::PWRITEFIVE    -> pwritefive   : WriteReqPWrite(5);
+        C1222_ENUMS::RequestResponseCodes::PWRITESIX     -> pwritesix    : WriteReqPWrite(6);
+        C1222_ENUMS::RequestResponseCodes::PWRITESEVEN   -> pwriteseven  : WriteReqPWrite(7);
+        C1222_ENUMS::RequestResponseCodes::PWRITEEIGHT   -> pwriteeight  : WriteReqPWrite(8);
+        C1222_ENUMS::RequestResponseCodes::PWRITENINE    -> pwritenine   : WriteReqPWrite(9);
+        C1222_ENUMS::RequestResponseCodes::PWRITEOFFSET  -> pwriteoffset : WriteReqOffset;
+        C1222_ENUMS::RequestResponseCodes::LOGON         -> logon        : LogonReq;
+        C1222_ENUMS::RequestResponseCodes::SECURITY      -> security     : SecurityReq;
+        C1222_ENUMS::RequestResponseCodes::LOGOFF        -> logoff       : void;
+        C1222_ENUMS::RequestResponseCodes::TERMINATE     -> terminate    : void;
+        C1222_ENUMS::RequestResponseCodes::DISCONNECT    -> disconnect   : void;
+        C1222_ENUMS::RequestResponseCodes::WAIT          -> wait         : WaitReq;
+        C1222_ENUMS::RequestResponseCodes::REGISTER      -> register     : RegisterReq;
+        C1222_ENUMS::RequestResponseCodes::DEREGISTER    -> deregister   : DeregisterReq;
+        C1222_ENUMS::RequestResponseCodes::RESOLVE       -> resolve      : ResolveReq;
+        C1222_ENUMS::RequestResponseCodes::TRACE         -> trace        : Trace(len-1);
 
         * -> : NotImplemented();
     };
@@ -573,76 +472,76 @@ type Service = unit(len: uint64){
 
 type ResponseOk = unit(len : uint64) {
     
-    var command : C1222::RequestResponseCodes;
+    var command : C1222_ENUMS::RequestResponseCodes;
     
 
     switch (self.command){
-        RequestResponseCodes::IDENT         -> identify     : ResponseOkIdent;
-        RequestResponseCodes::FULLREAD      -> fullread     : ReadRespOk(1);
-        RequestResponseCodes::PREADONE      -> preadone     : ReadRespOk(1);
-        RequestResponseCodes::PREADTWO      -> preadtwo     : ReadRespOk(2);
-        RequestResponseCodes::PREADTHREE    -> preadthree   : ReadRespOk(3);
-        RequestResponseCodes::PREADFOUR     -> preadfour    : ReadRespOk(4);
-        RequestResponseCodes::PREADFIVE     -> preadfive    : ReadRespOk(5);
-        RequestResponseCodes::PREADSIX      -> preadsix     : ReadRespOk(6);
-        RequestResponseCodes::PREADSEVEN    -> preadseven   : ReadRespOk(7);
-        RequestResponseCodes::PREADEIGHT    -> preadeight   : ReadRespOk(8);
-        RequestResponseCodes::PREADNINE     -> preadnine    : ReadRespOk(9);
-        RequestResponseCodes::PREADDEFAULT  -> preaddefault : ReadRespOk(1);
-        RequestResponseCodes::PREADOFFSET   -> preadoffset  : ReadRespOk(1);
-        RequestResponseCodes::FULLWRITE     -> fullwrite    : void;
-        RequestResponseCodes::PWRITEONE     -> pwriteone    : void;
-        RequestResponseCodes::PWRITETWO     -> pwritetwo    : void;
-        RequestResponseCodes::PWRITETHREE   -> pwritethree  : void;
-        RequestResponseCodes::PWRITEFOUR    -> pwritefour   : void;
-        RequestResponseCodes::PWRITEFIVE    -> pwritefive   : void;
-        RequestResponseCodes::PWRITESIX     -> pwritesix    : void;
-        RequestResponseCodes::PWRITESEVEN   -> pwriteseven  : void;
-        RequestResponseCodes::PWRITEEIGHT   -> pwriteeight  : void;
-        RequestResponseCodes::PWRITENINE    -> pwritenine   : void;
-        RequestResponseCodes::PWRITEOFFSET  -> pwriteoffset : void;
-        RequestResponseCodes::LOGON         -> logon        : LogonResp;
-        RequestResponseCodes::SECURITY      -> security     : void;
-        RequestResponseCodes::LOGOFF        -> logoff       : void;
-        RequestResponseCodes::TERMINATE     -> terminate    : void;
-        RequestResponseCodes::DISCONNECT    -> disconnect   : void;
-        RequestResponseCodes::WAIT          -> wait         : void;
-        RequestResponseCodes::REGISTER      -> register     : RegisterRespOk;
-        RequestResponseCodes::DEREGISTER    -> deregister   : void;
-        RequestResponseCodes::RESOLVE       -> resolve      : ResolveRespOk;
-        RequestResponseCodes::TRACE         -> trace        : Trace(len);
+        C1222_ENUMS::RequestResponseCodes::IDENT         -> identify     : ResponseOkIdent;
+        C1222_ENUMS::RequestResponseCodes::FULLREAD      -> fullread     : ReadRespOk(1);
+        C1222_ENUMS::RequestResponseCodes::PREADONE      -> preadone     : ReadRespOk(1);
+        C1222_ENUMS::RequestResponseCodes::PREADTWO      -> preadtwo     : ReadRespOk(2);
+        C1222_ENUMS::RequestResponseCodes::PREADTHREE    -> preadthree   : ReadRespOk(3);
+        C1222_ENUMS::RequestResponseCodes::PREADFOUR     -> preadfour    : ReadRespOk(4);
+        C1222_ENUMS::RequestResponseCodes::PREADFIVE     -> preadfive    : ReadRespOk(5);
+        C1222_ENUMS::RequestResponseCodes::PREADSIX      -> preadsix     : ReadRespOk(6);
+        C1222_ENUMS::RequestResponseCodes::PREADSEVEN    -> preadseven   : ReadRespOk(7);
+        C1222_ENUMS::RequestResponseCodes::PREADEIGHT    -> preadeight   : ReadRespOk(8);
+        C1222_ENUMS::RequestResponseCodes::PREADNINE     -> preadnine    : ReadRespOk(9);
+        C1222_ENUMS::RequestResponseCodes::PREADDEFAULT  -> preaddefault : ReadRespOk(1);
+        C1222_ENUMS::RequestResponseCodes::PREADOFFSET   -> preadoffset  : ReadRespOk(1);
+        C1222_ENUMS::RequestResponseCodes::FULLWRITE     -> fullwrite    : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITEONE     -> pwriteone    : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITETWO     -> pwritetwo    : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITETHREE   -> pwritethree  : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITEFOUR    -> pwritefour   : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITEFIVE    -> pwritefive   : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITESIX     -> pwritesix    : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITESEVEN   -> pwriteseven  : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITEEIGHT   -> pwriteeight  : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITENINE    -> pwritenine   : void;
+        C1222_ENUMS::RequestResponseCodes::PWRITEOFFSET  -> pwriteoffset : void;
+        C1222_ENUMS::RequestResponseCodes::LOGON         -> logon        : LogonResp;
+        C1222_ENUMS::RequestResponseCodes::SECURITY      -> security     : void;
+        C1222_ENUMS::RequestResponseCodes::LOGOFF        -> logoff       : void;
+        C1222_ENUMS::RequestResponseCodes::TERMINATE     -> terminate    : void;
+        C1222_ENUMS::RequestResponseCodes::DISCONNECT    -> disconnect   : void;
+        C1222_ENUMS::RequestResponseCodes::WAIT          -> wait         : void;
+        C1222_ENUMS::RequestResponseCodes::REGISTER      -> register     : RegisterRespOk;
+        C1222_ENUMS::RequestResponseCodes::DEREGISTER    -> deregister   : void;
+        C1222_ENUMS::RequestResponseCodes::RESOLVE       -> resolve      : ResolveRespOk;
+        C1222_ENUMS::RequestResponseCodes::TRACE         -> trace        : Trace(len);
 
         * -> : NotImplemented();
     };
 
     on %init{
-        self.command = RequestResponseCodes(commandContext.front());
+        self.command = C1222_ENUMS::RequestResponseCodes(commandContext.front());
     }
 
     on %done{
-        popFront();
+        C1222_FUNCTIONS::popFront();
     }
 };
 
-type ResponseNok = unit(code: RequestResponseCodes, len: uint64){
+type ResponseNok = unit(code: C1222_ENUMS::RequestResponseCodes, len: uint64){
     
-    var command : C1222::RequestResponseCodes;
+    var command : C1222_ENUMS::RequestResponseCodes;
     var actualLength : uint64 = len;
     
-    maxRequestSize  : uint32 if(code == RequestResponseCodes::RQTL);
-    maxResponseSize : uint32 if(code == RequestResponseCodes::RSTL);
-    sigerrResp      : bytes &size=self.actualLength if(code == RequestResponseCodes::SGERR);
+    maxRequestSize  : uint32 if(code == C1222_ENUMS::RequestResponseCodes::RQTL);
+    maxResponseSize : uint32 if(code == C1222_ENUMS::RequestResponseCodes::RSTL);
+    sigerrResp      : bytes &size=self.actualLength if(code == C1222_ENUMS::RequestResponseCodes::SGERR);
 
-    trace           : Trace(self.actualLength) if((self.command == RequestResponseCodes::TRACE ) && (code != RequestResponseCodes::SGERR));
+    trace           : Trace(self.actualLength) if((self.command == C1222_ENUMS::RequestResponseCodes::TRACE ) && (code != C1222_ENUMS::RequestResponseCodes::SGERR));
 
     on maxRequestSize{
-        if(code == RequestResponseCodes::RQTL){
+        if(code == C1222_ENUMS::RequestResponseCodes::RQTL){
             self.actualLength -= 4;
         }
     }
 
     on maxResponseSize{
-        if(code == RequestResponseCodes::RSTL){
+        if(code == C1222_ENUMS::RequestResponseCodes::RSTL){
             self.actualLength -= 4;
         }
     }
@@ -652,7 +551,7 @@ type ResponseNok = unit(code: RequestResponseCodes, len: uint64){
     }
         
     on %done{
-        popFront();
+        C1222_FUNCTIONS::popFront();
     }
 };
 
@@ -667,13 +566,13 @@ type ResponseOkIdent = unit {
 
 #- 5.3.2.4.1 Identification Service <feature> Pg. 22 ---------------------------
 type IdentFeature = unit {
-    tag : uint8 &convert=IdentFeatureTags($$);
+    tag : uint8 &convert=C1222_ENUMS::IdentFeatureTags($$);
 
     switch(self.tag){
-        IdentFeatureTags::SECURITY_MECHANISM    -> securityMechanism    : ID;
-        IdentFeatureTags::SESSION_CTRL          -> sessionCtrl          : IdentSessionCtrl; 
-        IdentFeatureTags::DEVICE_CLASS          -> deviceClass          : ID;
-        IdentFeatureTags::DEVICE_IDENTITY       -> deviceIdentity       : IdentDeviceIdentity;
+        C1222_ENUMS::IdentFeatureTags::SECURITY_MECHANISM    -> securityMechanism    : ID;
+        C1222_ENUMS::IdentFeatureTags::SESSION_CTRL          -> sessionCtrl          : IdentSessionCtrl; 
+        C1222_ENUMS::IdentFeatureTags::DEVICE_CLASS          -> deviceClass          : ID;
+        C1222_ENUMS::IdentFeatureTags::DEVICE_IDENTITY       -> deviceIdentity       : IdentDeviceIdentity;
 
         * -> : NotImplemented();
     };
@@ -713,7 +612,7 @@ type ReadRespOk = unit(count: uint64){
     var extracount  : uint64 = 0;
     var i           : uint64 = 0;
     tables          : TableData[count] foreach{
-        if(self.tables[self.i].count == 0xFFFF){
+        if(self.tables[self.i].count_m == 0xFFFF){
             self.extracount = self.extracount + 1;
         }
         self.i = self.i + 1;
@@ -724,30 +623,30 @@ type ReadRespOk = unit(count: uint64){
 #- 5.3.2.4.2 Read Service <table-data> Pg. 26 ----------------------------------
 # Same structure for write service as well.
 type TableData = unit {
-    count   : uint16;                  #need to handle when count == 0 pending length sent.
-    data    : bytes &size=self.count;
+    count_m   : uint16;                  #need to handle when count == 0 pending length sent.
+    data    : bytes &size=self.count_m;
     cksum   : uint8;
 };
 
 #- 5.3.2.4.3 Write Service <full-write> Pg. 27 ---------------------------------
 type WriteReqFull = unit{
     tableid : uint16;
-    table   : TableData;
-    extra   : TableData if(self.table.count == 0xFFFF);
+    table_m   : TableData;
+    extra   : TableData if(self.table_m.count_m == 0xFFFF);
 };
 
 #- 5.3.2.4.3 Write Service <pwrite-index> Pg. 27 --------------------------------
 type WriteReqPWrite = unit(count: uint64){
     tableid : uint16;
     index   : uint16[count];
-    table   : TableData;
+    table_m   : TableData;
 };
 
 #- 5.3.2.4.3 Write Service <pwrite-offset> Pg. 27 ------------------------------
 type WriteReqOffset = unit{
     tableid : uint16;
     offset  : bytes &size=3;
-    table   : TableData;
+    table_m   : TableData;
 };
 
 #- 5.3.2.4.4 Logon Service <logon> Pg. 28 --------------------------------------
@@ -902,12 +801,12 @@ type LengthType = unit {
 
 #- 5.2.3 <*-id-element> Pg. 15 -----------------------------------------
 type ID = unit{
-    tag  : uint8 &convert=IdentifierTags($$);
+    tag  : uint8 &convert=C1222_ENUMS::IdentifierTags($$);
     len  : LengthType;
 
     switch (self.tag){
-        IdentifierTags::UNIVERSAL -> universalAptitleId : UniversalObjectIdentifier(self.len.len);
-        IdentifierTags::RELATIVE  -> relativeAptitleId  : RelativeObjectIdentifier(self.len.len);
+        C1222_ENUMS::IdentifierTags::UNIVERSAL -> universalAptitleId : UniversalObjectIdentifier(self.len.len);
+        C1222_ENUMS::IdentifierTags::RELATIVE  -> relativeAptitleId  : RelativeObjectIdentifier(self.len.len);
 
         * -> : NotImplemented();
     };
@@ -973,48 +872,3 @@ type ObjectIdentifierNibble = unit {
 type NotImplemented = unit() {
     : bytes &eod; # any remaining unparsed data
 };
-
-################################################################################
-## Functions
-################################################################################
-
-#- Pop_Front -------------------------------------------------------------------
-# References global vector commandContext
-# Returns first value in the vector and removes it from the vector.
-function popFront() : uint8{
-    local size      : uint64    = |commandContext|;
-    local output    : uint8     = commandContext.front();
-
-    commandContext = commandContext.sub(1,size);
-
-    return output;
-}
-
-# Retrieved from https://github.com/cisagov/icsnpp-ge-srtp/blob/8a3355da2072348b959152a74e1b7f9f59b9dbec/analyzer/ge_srtp_functions.spicy
-public function uintToHexString(data: uint64): string {
-    return "0x%02x" % data;
-}
-
-# Retrieved from https://github.com/cisagov/icsnpp-ge-srtp/blob/8a3355da2072348b959152a74e1b7f9f59b9dbec/analyzer/ge_srtp_functions.spicy
-public function bytesToHexString(data: bytes): string {
-    local bytesAsHexString : string;
-    local cnt : uint8;
-
-    cnt = 0;
-    bytesAsHexString = "";
-
-    for (byte in data) {
-        bytesAsHexString = bytesAsHexString + ("%02x" % byte);
-
-        ++cnt;
-        if (cnt >= 15) {
-            break;
-        }
-    }
-
-    if (cnt > 0) {
-        bytesAsHexString = "0x" + bytesAsHexString;
-    }
-
-    return bytesAsHexString;
-}

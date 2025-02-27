@@ -1,0 +1,50 @@
+module C1222_FUNCTIONS;
+
+import spicy;
+import C1222;
+import C1222_ENUMS;
+
+################################################################################
+## Functions
+################################################################################
+
+#- Pop_Front -------------------------------------------------------------------
+# References global vector commandContext
+# Returns first value in the vector and removes it from the vector.
+public function popFront() : uint8{
+    local size      : uint64    = |C1222::commandContext|;
+    local output    : uint8     = C1222::commandContext.front();
+
+    C1222::commandContext = C1222::commandContext.sub(1,size);
+
+    return output;
+}
+
+# Retrieved from https://github.com/cisagov/icsnpp-ge-srtp/blob/8a3355da2072348b959152a74e1b7f9f59b9dbec/analyzer/ge_srtp_functions.spicy
+public function uintToHexString(data: uint64): string {
+    return "0x%02x" % data;
+}
+
+# Retrieved from https://github.com/cisagov/icsnpp-ge-srtp/blob/8a3355da2072348b959152a74e1b7f9f59b9dbec/analyzer/ge_srtp_functions.spicy
+public function bytesToHexString(data: bytes): string {
+    local bytesAsHexString : string;
+    local cnt : uint8;
+
+    cnt = 0;
+    bytesAsHexString = "";
+
+    for (byte in data) {
+        bytesAsHexString = bytesAsHexString + ("%02x" % byte);
+
+        ++cnt;
+        if (cnt >= 15) {
+            break;
+        }
+    }
+
+    if (cnt > 0) {
+        bytesAsHexString = "0x" + bytesAsHexString;
+    }
+
+    return bytesAsHexString;
+}

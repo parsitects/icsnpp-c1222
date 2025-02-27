@@ -547,7 +547,7 @@ type ResponseNok = unit(code: C1222_ENUMS::RequestResponseCodes, len: uint64){
     }
 
     on %init{
-        self.command = RequestResponseCodes(commandContext.front());
+        self.command = C1222_ENUMS::RequestResponseCodes(commandContext.front());
     }
         
     on %done{

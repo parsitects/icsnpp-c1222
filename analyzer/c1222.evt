@@ -136,6 +136,12 @@ on C1222::SecurityReq -> event C1222::SecurityReq(
     self
     );
 
+on C1222::ResponseNok -> event C1222::ResponseNok(
+    $conn,
+    $is_orig,
+    self
+    );
+
 # Read/Write Service Events
 
 on C1222::ReadReqPRead -> event C1222::ReadReqPRead(

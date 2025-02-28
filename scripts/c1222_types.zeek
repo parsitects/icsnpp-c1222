@@ -161,8 +161,8 @@ export {
         id: conn_id &log;
         proto: transport_proto &log;
 
-        service: vector of string &optional &log;
-        error_code: vector of string &optional &log;
+        service: string &optional &log;
+        error_code: string &optional &log;
         rqtl_max_request_size: int &optional &log;
         rstl_max_response_size: int &optional &log;
         sigerr_resp: string &optional &log;

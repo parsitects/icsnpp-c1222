@@ -526,6 +526,7 @@ type ResponseOk = unit(len : uint64) {
 type ResponseNok = unit(code: C1222_ENUMS::RequestResponseCodes, len: uint64){
     
     var command : C1222_ENUMS::RequestResponseCodes;
+    var code_zeek: C1222_ENUMS::RequestResponseCodes; ##this is a copy of the code that can be accessed in zeek.
     var actualLength : uint64 = len;
     
     maxRequestSize  : uint32 if(code == C1222_ENUMS::RequestResponseCodes::RQTL);
@@ -548,6 +549,7 @@ type ResponseNok = unit(code: C1222_ENUMS::RequestResponseCodes, len: uint64){
 
     on %init{
         self.command = C1222_ENUMS::RequestResponseCodes(commandContext.front());
+        self.code_zeek = code;
     }
         
     on %done{

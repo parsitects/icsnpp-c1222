@@ -523,8 +523,8 @@ event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222:
     hook set_service_error_log(c);
 
     local error_log = c$c1222_service_error_log;
-    #error_log$service = C1222::REQUEST_RESPONSE_CODES[error_record$command];
-    #error_log$error_code = getServiceVectorLog(error_record$code);
+    error_log$service = C1222_ENUMS::REQUEST_RESPONSE_CODES[error_record$command];
+    error_log$error_code = C1222_ENUMS::REQUEST_RESPONSE_CODES[error_record$code_zeek];
     if(error_record?$maxRequestSize){
         error_log$rqtl_max_request_size = error_record$maxRequestSize;
     }

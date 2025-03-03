@@ -63,6 +63,15 @@ hook set_security_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_service_error_log(c: connection) {
+    if (! c?$c1222_service_error_log)
+        c$c1222_service_error_log = service_error_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -82,171 +91,6 @@ function getServiceVectorLog(services: vector of Zeek_C1222::EpsemService): vect
 
     for (i, item in services) {
         service_vector += C1222_ENUMS::REQUEST_RESPONSE_CODES[item$service$serviceTag];
-
-##        switch item$service$serviceTag {
-##        case C1222::RequestResponseCodes_ERR:
-##            service_vector += "Resp:ERR";
-##            break;
-##        case C1222::RequestResponseCodes_OK:
-##            service_vector += "Resp:OK";
-##            break;
-##        case C1222::RequestResponseCodes_SNS:
-##            service_vector += "Resp:SNS";
-##            break;
-##        case C1222::RequestResponseCodes_ISC:
-##            service_vector += "Resp:ISC";
-##            break;
-##        case C1222::RequestResponseCodes_ONP:
-##            service_vector += "Resp:ONP";
-##            break;
-##        case C1222::RequestResponseCodes_IAR:
-##            service_vector += "Resp:IAR";
-##            break;
-##        case C1222::RequestResponseCodes_BSY:
-##            service_vector += "Resp:BSY";
-##            break;
-##        case C1222::RequestResponseCodes_DNR:
-##            service_vector += "Resp:DNR";
-##            break;
-##        case C1222::RequestResponseCodes_DLK:
-##            service_vector += "Resp:DLK";
-##            break;
-##        case C1222::RequestResponseCodes_RNO:
-##            service_vector += "Resp:RNO";
-##            break;
-##        case C1222::RequestResponseCodes_ISSS:
-##            service_vector += "Resp:ISSS";
-##            break;
-##        case C1222::RequestResponseCodes_SME:
-##            service_vector += "Resp:SME";
-##            break;
-##        case C1222::RequestResponseCodes_UAT:
-##            service_vector += "Resp:UAT";
-##            break;
-##        case C1222::RequestResponseCodes_NETT:
-##            service_vector += "Resp:NETT";
-##            break;
-##        case C1222::RequestResponseCodes_NETR:
-##            service_vector += "Resp:NETR";
-##            break;
-##        case C1222::RequestResponseCodes_RQTL:
-##            service_vector += "Resp:RQTL";
-##            break;
-##        case C1222::RequestResponseCodes_RSTL:
-##            service_vector += "Resp:RSTL";
-##            break;
-##        case C1222::RequestResponseCodes_SGNP:
-##            service_vector += "Resp:SGNP";
-##            break;
-##        case C1222::RequestResponseCodes_SGERR:
-##            service_vector += "Resp:SGERR";
-##            break;
-##        case C1222::RequestResponseCodes_IDENT:
-##            service_vector += "Req:IDENT";
-##            break;
-##        case C1222::RequestResponseCodes_FULLREAD:
-##            service_vector += "Req:FULLREAD";
-##            break;
-##        case C1222::RequestResponseCodes_PREADONE:
-##            service_vector += "Req:PARTIAL_READ_1";
-##            break;
-##        case C1222::RequestResponseCodes_PREADTWO:
-##            service_vector += "Req:PARTIAL_READ_2";
-##            break;
-##        case C1222::RequestResponseCodes_PREADTHREE:
-##            service_vector += "Req:PARTIAL_READ_3";
-##            break;
-##        case C1222::RequestResponseCodes_PREADFOUR:
-##            service_vector += "Req:PARTIAL_READ_4";
-##            break;
-##        case C1222::RequestResponseCodes_PREADFIVE:
-##            service_vector += "Req:PARTIAL_READ_5";
-##            break;
-##        case C1222::RequestResponseCodes_PREADSIX:
-##            service_vector += "Req:PARTIAL_READ_6";
-##            break;
-##        case C1222::RequestResponseCodes_PREADSEVEN:
-##            service_vector += "Req:PARTIAL_READ_7";
-##            break;
-##        case C1222::RequestResponseCodes_PREADEIGHT:
-##            service_vector += "Req:PARTIAL_READ_8";
-##            break;
-##        case C1222::RequestResponseCodes_PREADNINE:
-##            service_vector += "Req:PARTIAL_READ_9";
-##            break;
-##        case C1222::RequestResponseCodes_PREADDEFAULT:
-##            service_vector += "Req:PARTIAL_READ_DEFAULT";
-##            break;
-##        case C1222::RequestResponseCodes_PREADOFFSET:
-##            service_vector += "Req:PARTIAL_READ_OFFSET";
-##            break;
-##        case C1222::RequestResponseCodes_FULLWRITE:
-##            service_vector += "Req:FULLWRITE";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITEONE:
-##            service_vector += "Req:PARTIAL_PARTIAL_1";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITETWO:
-##            service_vector += "Req:PARTIAL_PARTIAL_2";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITETHREE:
-##            service_vector += "Req:PARTIAL_PARTIAL_3";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITEFOUR:
-##            service_vector += "Req:PARTIAL_PARTIAL_4";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITEFIVE:
-##            service_vector += "Req:PARTIAL_PARTIAL_5";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITESIX:
-##            service_vector += "Req:PARTIAL_PARTIAL_6";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITESEVEN:
-##            service_vector += "Req:PARTIAL_PARTIAL_7";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITEEIGHT:
-##            service_vector += "Req:PARTIAL_PARTIAL_8";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITENINE:
-##            service_vector += "Req:PARTIAL_PARTIAL_9";
-##            break;
-##        case C1222::RequestResponseCodes_PWRITEOFFSET:
-##            service_vector += "Req:PARTIAL_PARTIAL_OFFSET";
-##            break;
-##        case C1222::RequestResponseCodes_LOGON:
-##            service_vector += "Req:LOGON";
-##            break;
-##        case C1222::RequestResponseCodes_SECURITY:
-##            service_vector += "Req:SECURITY";
-##            break;
-##        case C1222::RequestResponseCodes_LOGOFF:
-##            service_vector += "Req:LOGOFF";
-##            break;
-##        case C1222::RequestResponseCodes_TERMINATE:
-##            service_vector += "Req:TERMINATE";
-##            break;
-##        case C1222::RequestResponseCodes_DISCONNECT:
-##            service_vector += "Req:DISCONNECT";
-##            break;
-##        case C1222::RequestResponseCodes_WAIT:
-##            service_vector += "Req:WAIT";
-##            break;
-##        case C1222::RequestResponseCodes_REGISTER:
-##            service_vector += "Req:REGISTER";
-##            break;
-##        case C1222::RequestResponseCodes_DEREGISTER:
-##            service_vector += "Req:DEREGISTER";
-##            break;
-##        case C1222::RequestResponseCodes_RESOLVE:
-##            service_vector += "Req:RESOLVE";
-##            break;
-##        case C1222::RequestResponseCodes_TRACE:
-##            service_vector += "Req:TRACE";
-##            break;
-##        default:
-##            service_vector += "Unknown Service";
-##            break;
-##        }
     }
 
     return service_vector;
@@ -672,10 +516,32 @@ event C1222::WriteReqOffset(c: connection, is_orig: bool, req: Zeek_C1222::Write
     read_write_log$chksum += tableVal$cksum;
 }
 
-# END PACKET ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
+#Error Resp
+event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222::ResponseNok) {
+    hook set_service_error_log(c);
+
+    local error_log = c$c1222_service_error_log;
+    error_log$service = C1222_ENUMS::REQUEST_RESPONSE_CODES[error_record$command];
+    error_log$error_code = C1222_ENUMS::REQUEST_RESPONSE_CODES[error_record$code_zeek];
+    if(error_record?$maxRequestSize){
+        error_log$rqtl_max_request_size = error_record$maxRequestSize;
+    }
+    if(error_record?$maxResponseSize){
+        error_log$rstl_max_response_size = error_record$maxResponseSize;
+    }
+    if(error_record?$sigerrResp){
+        error_log$sigerr_resp = error_record$sigerrResp;
+    }
+
+    #TODO: Add scripting to handle trace log on error
+}
+
+#END PACKET
 event C1222::EndPacket(c: connection, is_orig: bool) {
     C1222::emit_c1222_summary_log(c);
     emit_c1222_authentication_value_log(c);
     emit_c1222_user_information_log(c);
+    emit_c1222_service_error_log(c);
 }

@@ -151,9 +151,15 @@ export {
         #ap title
         #local address
 
-    #Trace
-        #request/resposne
-        #vector of aptitle
+    type trace_service_log : record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        ap_titles: vector of string &optional &log;
+    };
 
     type service_error_log: record {
         ts: time &log;

@@ -63,6 +63,15 @@ hook set_security_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_trace_service_log(c: connection) {
+    if (! c?$c1222_trace_service_log)
+        c$c1222_trace_service_log = trace_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 hook set_service_error_log(c: connection) {
     if (! c?$c1222_service_error_log)
         c$c1222_service_error_log = service_error_log(
@@ -298,6 +307,16 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
         read_write_log$service_type = "full-read";
         read_write_log$table_id = serviceType$fullread;
     }
+    else if(service == C1222_ENUMS::RequestResponseCodes_TRACE){
+        hook set_trace_service_log(c);
+        local traceObj = serviceType$trace;
+        local trace_log = c$c1222_trace_service_log;
+        trace_log$req_resp = "Req";
+
+        for (i,traceN in traceObj$trace){    
+            trace_log$ap_titles += getIdString(traceN);
+        }
+    }
 }
 
 event C1222::EndService(c: connection, is_orig: bool){
@@ -305,6 +324,7 @@ event C1222::EndService(c: connection, is_orig: bool){
     C1222::emit_c1222_read_write_service_log(c);
     C1222::emit_c1222_logon_service_log(c);
     C1222::emit_c1222_security_service_log(c);
+    C1222::emit_c1222_trace_service_log(c);
 }
 
 #Ident Resp
@@ -518,8 +538,25 @@ event C1222::WriteReqOffset(c: connection, is_orig: bool, req: Zeek_C1222::Write
 
 # ------------------------------------------------------------------------------
 
+event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::ResponseOk) {
+    if (resp$command == C1222_ENUMS::RequestResponseCodes_TRACE) {
+        local traceObj = resp$trace;
+
+        hook set_trace_service_log(c);
+
+        local trace_log = c$c1222_trace_service_log;
+        trace_log$req_resp = "Resp";
+
+        for (i,traceN in traceObj$trace){    
+            trace_log$ap_titles += getIdString(traceN);
+        }
+    }
+}
+
 #Error Resp
 event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222::ResponseNok) {
+    # ERROR LOG
+
     hook set_service_error_log(c);
 
     local error_log = c$c1222_service_error_log;
@@ -535,7 +572,20 @@ event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222:
         error_log$sigerr_resp = error_record$sigerrResp;
     }
 
-    #TODO: Add scripting to handle trace log on error
+    # TRACE LOG
+
+    if(error_record?$trace){
+        local traceObj = error_record$trace;
+
+        hook set_trace_service_log(c);
+
+        local trace_log = c$c1222_trace_service_log;
+        trace_log$req_resp = "Resp";
+
+        for (i,traceN in traceObj$trace){    
+            trace_log$ap_titles += getIdString(traceN);
+        }
+    }
 }
 
 #END PACKET

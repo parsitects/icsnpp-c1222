@@ -47,32 +47,28 @@ If users have ZKG configured to load packages (see `@load packages` in the [ZKG 
 This log summarizes, by packet, ANSI C12.22 frames transmitted over 1153/tcp or 1153/udp to `c1222.log`. The port can be overriden by redefining the `c1222_ports_tcp` and `c1222_ports_udp` variables, respectively, e.g.:
 
 ```
-$ zeek -C -r c1222_tcp.pcap local "SYNCHROPHASOR::c1222_ports_tcp={ 40712/tcp }"
+$ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
 ```
 
 #### Fields Captured
 
-| Field                 | Type           | Description                                               |
-| ----------------------|----------------|-----------------------------------------------------------| 
-| ts                    | time           | Timestamp (network time)                                  |
-| uid                   | string         | Unique ID for this connection                             |
-| id                    | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto                 | string         | Transport protocol                                        |
-| elements              | set<string>    | List of the ASCE Elements utilized in the packet          |
-| is_encrypted_epsem    | bool           | Flag denoting if the EPSEM data is encrypted              |
-| services              | set<string>    | List of epsem services in the packet                      |
-| aso_context           | string         | Application context universal identifier                  |
-| called_ap_title       | string         | Unique identifier of message target                       |
-| calling_ap_title      | string         | Unique identifier of message initiator                    |
-| calling_ae_qualifier  | set<string>    | Qualifies data being sent                                 |
-| mechanism name        | string         | Unique security mechanism identifier                      |
-| calling_auth_value    | string         | Authenticatin mechanism used                              |
-| 
-        calling_ae_qualifier: vector of string &optional &log;
-        mechanism_name: string &optional &log;
-        calling_auth_value: string &optional &log; #will list the mechanism name. Details in another log.
-        called_ap_invocation_id: string &optional &log;
-        calling_ap_invocation_id: string &optional &log;
+| Field                     | Type           | Description                                               |
+| --------------------------|----------------|-----------------------------------------------------------| 
+| ts                        | time           | Timestamp (network time)                                  |
+| uid                       | string         | Unique ID for this connection                             |
+| id                        | conn_id        | Default Zeek connection info (IP addresses, ports)        |
+| proto                     | string         | Transport protocol                                        |
+| elements                  | set<string>    | List of the ASCE Elements utilized in the packet          |
+| is_encrypted_epsem        | bool           | Flag denoting if the EPSEM data is encrypted              |
+| services                  | set<string>    | List of epsem services in the packet                      |
+| aso_context               | string         | Application context universal identifier                  |
+| called_ap_title           | string         | Unique identifier of message target                       |
+| calling_ap_title          | string         | Unique identifier of message initiator                    |
+| calling_ae_qualifier      | set<string>    | Qualifies data being sent                                 |
+| mechanism name            | string         | Unique security mechanism identifier                      |
+| calling_auth_value        | string         | Authenticatin mechanism used                              |
+| called_ap_invocation_id   | string         | Called AP invocation identifier                           |
+| calling_ap_invocation_id  | string         | Calling AP invocation identifier                          |
 
 * The **`calling_ae_qualifer`** field is comprised of four non-exclusive qualifiers:
     - `TEST` - test message
@@ -82,31 +78,34 @@ $ zeek -C -r c1222_tcp.pcap local "SYNCHROPHASOR::c1222_ports_tcp={ 40712/tcp }"
 * The **`calling_auth_value`** field contains a summary of the authentication mechanism used. Details of the calling 
 authentication value can be found in `c1222_authentication_value.log`.
 
-### Synchrophasor Command Frame Log (synchrophasor_cmd.log)
+### Authentication Value Log (c1222_authentication_value.log)
 
 #### Overview
 
-This log summarizes synchrophasor Command frames.
+This log provides the values used for the authentication method in the message.
 
 #### Fields Captured
 
-| Field             | Type           | Description                                               |
-| ----------------- |----------------|-----------------------------------------------------------|
-| ts                | time           | Timestamp (network time)                                  |
-| uid               | string         | Unique ID for this connection                             |
-| id                | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto             | string         | Transport protocol                                        |
-| frame_type        | string         | Frame type from synchrophasor frame synchronization word  |
-| frame_size        | count          | Frame size (in bytes)                                     |
-| header_time_stamp | time           | Timestamp from frame header                               |
-| command           | string         | String represetnation of the command                      |
-| extframe          | vector<count>  | Extended frame data (user-defined)                        |
+| Field                     | Type           | Description                                               |
+| --------------------------|----------------|-----------------------------------------------------------|
+| ts                        | time           | Timestamp (network time)                                  |
+| uid                       | string         | Unique ID for this connection                             |
+| id                        | conn_id        | Default Zeek connection info (IP addresses, ports)        |
+| proto                     | string         | Transport protocol                                        |
+| authentication_mechanism  | string         | Authenticatin mechanism used                              |
+| indirect_reference        | bool           | Indirect reference bytes present                          |
+| octet_aligned             | string         | Bytes used to define octet aligned authentication         |
+| c1222_key_id              | int            | C12.22 auth key identifier                                |
+| c1222_iv                  | string         | C12.22 auth initial value                                 |
+| c1221_ident               | string         | C12.21 auth identification type                           |
+| c1221_req                 | string         | C12.21 auth request type                                  |
+| c1221_resp                | string         | C12.21 auth response type                                 |
 
-### Synchrophasor Header Frame Log (synchrophasor_hdr.log)
+### User Information Element Summary Log (c1222_user_information.log)
 
 #### Overview
 
-This log summarizes synchrophasor Header frames.
+This log summarizes the User Information Element and the EPSEM data.
 
 #### Fields Captured
 

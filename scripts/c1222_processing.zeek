@@ -257,7 +257,41 @@ event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek
 
     user_info_log$padding = user_info_value$footer$padding;
     user_info_log$mac = user_info_value$footer$mac;
-    user_info_log$epsem_control = user_info_value$epsem$epsemControl;
+
+    local epsem_ctr = userinformation$epsem$epsemControl;
+    local epsem_ctr_str: vector of string;
+
+    if(epsem_ctr$responseControl == 0){
+        epsem_ctr_str += "RESPONSE_CONTROL_ALWAYS_RESPOND";
+    }
+    else if(epsem_ctr$responseControl == 1) {
+        epsem_ctr_str += "RESPONSE_CONTROL_RESPOND_ON_EXCEPTION";
+    }
+    else if(epsem_ctr$responseControl == 2) {
+        epsem_ctr_str += "RESPONSE_CONTROL_NEVER_RESPOND";
+    }
+
+    if(epsem_ctr$securityMode == 0){
+        epsem_ctr_str += "SECURITY_MODE_CLEARTEXT";
+    }
+    else if(epsem_ctr$securityMode == 1){
+        epsem_ctr_str += "SECURITY_MODE_CLEARTEXT_WITH_AUTHENTICATION";
+    }
+    else if(epsem_ctr$securityMode == 2){
+        epsem_ctr_str += "SECURITY_MODE_CIPHERTEXT_WITH_AUTHENTICATION";
+    }
+
+    if(epsem_ctr$edClassIncluded == 1){
+        epsem_ctr_str += "ED_CLASS_INCLUDED";
+    }
+    if(epsem_ctr$proxyServiceUsed == 1){
+        epsem_ctr_str += "PROXY_SERVICE_USED";
+    }
+    if(epsem_ctr$recoverySession == 1){
+        epsem_ctr_str += "RECOVERY_SESSION";
+    }
+
+    user_info_log$epsem_control = epsem_ctr_str;
 
     #ed class
     local edClassIncluded = user_info_value$epsem$epsemControl$edClassIncluded;

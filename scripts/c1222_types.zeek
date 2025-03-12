@@ -122,21 +122,25 @@ export {
         #request/response
         #time
 
-    #Registration/Deregistration
-        #request/response
-        #Service Type
-        #node type
-        #conneciton type
-        #device class
-        #ap title
-        #electronic serial number
-        #native address
-        #registration period
-        #notification pattern
-        #reg-ap-title
-        #reg-delay
-        #reg-period
-        #reg-info
+    type dereg_reg_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        service_type: string &optional &log;
+        node_type: vector of string &optional &log;
+        connection_type: vector of string &optional &log;
+        device_class: string &optional &log;
+        ap_title: string &optional &log;
+        electronic_serial_number: string &optional &log;
+        native_address: string &optional &log;
+        notification_pattern: string &optional &log;
+        reg_period: count &optional &log;
+        reg_delay: int &optional &log;
+        reg_info: vector of string &optional &log;
+    };
 
     #resolve
         #request/response

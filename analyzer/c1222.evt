@@ -186,6 +186,12 @@ on C1222::WriteReqOffset -> event C1222::WriteReqOffset(
     self
     );
 
+on C1222::WaitReq -> event C1222::WaitReq(
+    $conn,
+    $is_orig,
+    self
+    );
+
 on C1222::RegisterReq -> event C1222::RegisterReq(
     $conn,
     $is_orig,

@@ -118,9 +118,15 @@ export {
         user_id: int &optional &log;
     };
 
-    #Wait
-        #request/response
-        #time
+    type wait_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        time_s: int &optional &log;
+    };
 
     type dereg_reg_service_log: record {
         ts: time &log;

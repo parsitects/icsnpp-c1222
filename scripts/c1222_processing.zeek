@@ -72,6 +72,15 @@ hook set_security_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_wait_service_log(c: connection) {
+    if (! c?$c1222_wait_service_log)
+        c$c1222_wait_service_log = wait_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 hook set_trace_service_log(c: connection) {
     if (! c?$c1222_trace_service_log)
         c$c1222_trace_service_log = trace_service_log(
@@ -367,6 +376,7 @@ event C1222::EndService(c: connection, is_orig: bool){
     C1222::emit_c1222_read_write_service_log(c);
     C1222::emit_c1222_logon_service_log(c);
     C1222::emit_c1222_security_service_log(c);
+    C1222::emit_c1222_wait_service_log(c);
     C1222::emit_c1222_dereg_reg_service_log(c);
     C1222::emit_c1222_trace_service_log(c);
 }
@@ -709,6 +719,15 @@ event C1222::DeregisterReq(c: connection, is_orig: bool, req: Zeek_C1222::Deregi
 
 # ------------------------------------------------------------------------------
 
+#Wait Req
+event C1222::WaitReq(c: connection, is_orig: bool, req: Zeek_C1222::WaitReq) {
+    hook set_wait_service_log(c);
+
+    local wait_log = c$c1222_wait_service_log;
+    wait_log$req_resp = "Req";
+    wait_log$time_s = req$timeis;
+}
+
 event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::ResponseOk) {
     if (resp$command == C1222_ENUMS::RequestResponseCodes_TRACE) {
         local traceObj = resp$trace;
@@ -728,6 +747,12 @@ event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::Response
         local dereg_reg_log = c$c1222_dereg_reg_service_log;
         dereg_reg_log$req_resp = "Resp";
         dereg_reg_log$service_type = "deregister_resp_ok";
+    }
+    else if (resp$command == C1222_ENUMS::RequestResponseCodes_WAIT) {
+        hook set_wait_service_log(c);
+
+        local wait_log = c$c1222_wait_service_log;
+        wait_log$req_resp = "Resp";
     }
 }
 

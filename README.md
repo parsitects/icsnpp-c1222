@@ -15,9 +15,10 @@ This parser produces the following log files, defined in [analyzer/main.zeek](an
 * `c1222_read_write_service.log`
 * `c1222_logon_service.log`
 * `c1222_security_service.log`
-* `.log`
-* `.log`
-* `.log`
+* `c1222_wait_service.log`
+* `c1222_dereg_reg_service.log`
+* `c1222_resolve_service.log`
+* `c1222_trace_service.log`
 * `c1222_service_error.log`
 
 For additional information on this log file, see the *Logging Capabilities* section below.
@@ -121,153 +122,216 @@ This log summarizes the User Information Element and the EPSEM data.
 | command           | string         | String representation of the command                      |
 | data              | string         | Human-readable header data (user-defined)                 |
 
-### Synchrophasor Configuration Frame Log (synchrophasor_cfg.log)
+### Identification Service Log (c1222_identification_service.log)
 
 #### Overview
 
-This log summarizes synchrophasor Configuration (CFG-1, CFG-2, and CFG-3) frames.
+This log provides details of each data field in the Identification EPSEM service.
 
 #### Fields Captured
 
-| Field              | Type           | Description                                               |
-| -------------------|----------------|-----------------------------------------------------------|
-| ts                 | time           | Timestamp (network time)                                  |
-| uid                | string         | Unique ID for this connection                             |
-| id                 | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto              | string         | Transport protocol                                        |
-| frame_type         | string         | Frame type from synchrophasor frame synchronization word  |
-| frame_size         | count          | Frame size (in bytes)                                     |
-| header_time_stamp  | time           | Timestamp from frame header                               |
-| cont_idx           | count          | Continuation index for fragmented frames                  |
-| pmu_count_expected | count          | The number of PMUs expected in the configuration frame    |
-| pmu_count_actual   | count          | The number of PMUs included in the configuration frame    |
-| cfg_frame_id       | string         | Unique string to correlate with synchrophasor_cfg_detail  |
+| Field                  | Type           | Description                                               |
+| -----------------------|----------------|-----------------------------------------------------------|
+| ts                     | time           | Timestamp (network time)                                  |
+| uid                    | string         | Unique ID for this connection                             |
+| id                     | conn_id        | Default Zeek connection info (IP addresses, ports)        |
+| proto                  | string         | Transport protocol                                        |
+| req_resp               | string         | Request/Response                                          |
+| standard               | string         | Reference Standard                                        |
+| version                | int            | Reference Version Number                                  |
+| revision               | int            | Reference Revision Number                                 |
+| security_mechanism     | string         | Universal ID of the security mechanism supported          |
+| nbrSession_supported   | bool           | Node supports session-based communication                 |
+| sessionless_supported  | bool           | Supports use of read and write outside of session         |
+| device_class           | string         | Universal device identifier                               |
+| device_identity_format | int            | Device identity encoding format flag                      |
+| device_identity        | string         | Device identity bytes                                     |
 
-### Synchrophasor Configuration PMU Details (synchrophasor_cfg_detail.log)
+### Read Write Service Log (c1222_read_write_service.log)
 
 #### Overview
 
-This log lists the per-PMU details from synchrophasor Configuration (CFG-1, CFG-2, and CFG-3) frames. As this can be very verbose, this log file is **disabled** by default. Users can enable it by appending `SYNCHROPHASOR::log_cfg_detail=T` to the `zeek` command on the command line or by adding `redef SYNCHROPHASOR::log_cfg_detail = T;` to the `local.zeek` file.
+This log provides details of each data field in the Read/Write EPSEM services.
 
 #### Fields Captured
 
-Most of the fields listed here are optional. Many may be unused during communication depending on device configuration. See IEEE Std C37.118.2-2011 for more details.
+| Field                  | Type             | Description                                               |
+| -----------------------|------------------|-----------------------------------------------------------|
+| ts                     | time             | Timestamp (network time)                                  |
+| uid                    | string           | Unique ID for this connection                             |
+| id                     | conn_id          | Default Zeek connection info (IP addresses, ports)        |
+| proto                  | string           | Transport protocol                                        |
+| req_resp               | string           | Request/Response                                          |
+| service_type           | string           | Name of the EPSEM service represented                     |
+| table_id               | int              | ID of the table being read/written                        |
+| offset                 | count            | Offset into data Table in bytes                           |
+| index                  | string           | Index value used to locate start of data                  |
+| element_count          | int              | Number of Table Elements to read/write                    |
+| count_m                | vector of int    | Length of data written\returned                           |
+| data                   | vector of string | Table data elements                                       |
+| chksum                 | vector of int    | Checksum of each table                                    |
+| octet_count            | int              | Length of Table data requested starting at offset         |
 
-
-| Field                                          | Type           | Description                                                                  |
-| -----------------------------------------------|----------------|------------------------------------------------------------------------------|
-| ts                                             | time           | Timestamp (network time)                                                     |
-| uid                                            | string         | Unique ID for this connection                                                |
-| id                                             | conn_id        | Default Zeek connection info (IP addresses, ports)                           |
-| proto                                          | string         | Transport protocol                                                           |
-| frame_type                                     | string         | Frame type from synchrophasor frame synchronization word                     |
-| header_time_stamp                              | time           | Timestamp from frame header                                                  |
-| cfg_frame_id                                   | string         | Unique string to correlate with synchrophasor_cfg                            |
-| pmu_idx                                        | count          | 0-based index of PMU configuration within the CFG frame                      |
-| svc_class                                      | string         | Service class as defined in IEEE Std C37.118.1                               |
-| station_name                                   | string         | Station name                                                                 |
-| data_source_id                                 | count          | Data source id                                                               |
-| global_pmuid                                   | string         | Global PMU ID                                                                |
-| phasor_shape                                   | bool           | F = phasor real and imaginary (rectangular), T = magnitude and angle (polar) |
-| phasor_format                                  | bool           | F = phasors 16-bit integer, T = floating point                               |
-| analog_format                                  | bool           | F = analogs 16-bit integer, T = floating point                               |
-| freq_format                                    | bool           | 0 = FREQ/DFREQ 16-bit integer, 1 = floating point                            |
-| phnmr                                          | count          | Number of phasors                                                            |
-| annmr                                          | count          | Number of analog values                                                      |
-| dgnmr                                          | count          | Number of digital status words                                               |
-| phnam                                          | vector<string> | Phasor channel names                                                         |
-| annam                                          | vector<string> | Analog channel names                                                         |
-| dgnam                                          | vector<string> | Digital channel names                                                        |
-| phasor_conv_phunit                             | vector<count>  | Phasor conversion factor format unit                                         |
-| phasor_conv_phvalue                            | vector<count>  | Phasor conversion factor format value                                        |
-| phasor_conv_upsampled_interpolation            | vector<bool>   | Up sampled with interpolation                                                |
-| phasor_conv_upsampled_extrapolation            | vector<bool>   | Upsampled with extrapolation                                                 |
-| phasor_conv_downsampled_reselection            | vector<bool>   | Down sampled by reselection (selecting every Nth sample)                     |
-| phasor_conv_downsampled_fir_filter             | vector<bool>   | Down sampled with FIR filter                                                 |
-| phasor_conv_downsampled_no_fir_filter          | vector<bool>   | Down sampled with non-FIR filter                                             |
-| phasor_conv_filtered_without_changing_sampling | vector<bool>   | Filtered without changing sampling                                           |
-| phasor_conv_calibration_mag_adj                | vector<bool>   | Phasor magnitude adjusted for calibration                                    |
-| phasor_conv_calibration_phas_adj               | vector<bool>   | Phasor phase adjusted for calibration                                        |
-| phasor_conv_rotation_phase_adj                 | vector<bool>   | Phasor phase adjusted for rotation ( ±30o, ±120o, etc.)                      |
-| phasor_conv_pseudo_phasor_val                  | vector<bool>   | Pseudo-phasor value (combined from other phasors)                            |
-| phasor_conv_mod_appl                           | vector<bool>   | Modification applied, type not here defined                                  |
-| phasor_conv_phasor_component                   | vector<count>  | Phasor component (see std. spec)                                             |
-| phasor_conv_phasor_type                        | vector<bool>   | F = voltage, T = current                                                     |
-| phasor_conv_user_def                           | vector<count>  | User-defined                                                                 |
-| phasor_conv_scale_factor                       | vector<double> | Scale factor Y                                                               |
-| phasor_conv_angle_adj                          | vector<double> | Phasor angle adjustment θ                                                    |
-| analog_conv_analog_flags                       | vector<count>  | Analog flags                                                                 |
-| analog_conv_user_defined_scaling               | vector<int>    | User-defined scaling                                                         |
-| analog_conv_mag_scale                          | vector<double> | Magnitude scale factor                                                       |
-| analog_conv_offset                             | vector<double> | Angle offset                                                                 |
-| digital_conv_normal_status_mask                | vector<count>  | Digital input normal status mask                                             |
-| digital_conv_valid_inputs_mask                 | vector<count>  | Digital input valid inputs status mask                                       |
-| pmu_lat                                        | double         | PMU latitude in degrees                                                      |
-| pmu_lon                                        | double         | PMU longitude in degrees                                                     |
-| pmu_elev                                       | double         | PMU elevation in meters                                                      |
-| window                                         | int            | Phasor measurement window length                                             |
-| group_delay                                    | int            | Phasor measurement group delay                                               |
-| fnom                                           | count          | Nominal line frequency code                                                  |
-| cfgcnt                                         | count          | Configuration change count                                                   |
-
-### Synchrophasor Data Frame Log (synchrophasor_data.log)
+### Logon Service Log (c1222_logon_service.log)
 
 #### Overview
 
-This log summarizes synchrophasor Data frames. As this can be very verbose, this log file is **disabled** by default. You can enable it by appending `SYNCHROPHASOR::log_data_frame=T` to your `zeek` command on the command line or by adding `redef SYNCHROPHASOR::log_data_frame = T;` to your `local.zeek` file.
+This log provides details of each data field in the Logon EPSEM service.
 
 #### Fields Captured
 
-| Field              | Type           | Description                                               |
-| -------------------|----------------|-----------------------------------------------------------|
-| ts                 | time           | Timestamp (network time)                                  |
-| uid                | string         | Unique ID for this connection                             |
-| id                 | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto              | string         | Transport protocol                                        |
-| frame_type         | string         | Frame type from synchrophasor frame synchronization word  |
-| frame_size         | count          | Frame size (in bytes)                                     |
-| header_time_stamp  | time           | Timestamp from frame header                               |
-| pmu_count_expected | count          | The number of PMUs expected in the data frame             |
-| pmu_count_actual   | count          | The number of PMUs included in the data frame             |
-| data_frame_id      | string         | Unique string to correlate with synchrophasor_data_detail |
+| Field                     | Type             | Description                                                |
+| --------------------------|------------------|------------------------------------------------------------|
+| ts                        | time             | Timestamp (network time)                                   |
+| uid                       | string           | Unique ID for this connection                              |
+| id                        | conn_id          | Default Zeek connection info (IP addresses, ports)         |
+| proto                     | string           | Transport protocol                                         |
+| req_resp                  | string           | Request/Response                                           |
+| user_id                   | int              | User identification code                                   |
+| user                      | string           | 10 bytes containing user identification                    |
+| req_session_idle_timeout  | int              | Number of seconds a session may be idle before termination |
+| resp_session_idle_timeout | int              | Number of seconds a session may be idle before termination |
 
-### Synchrophasor Data PMU Details Log (synchrophasor_data_detail.log)
+### Security Service Log (c1222_security_service.log)
 
 #### Overview
 
-This log lists the per-PMU details from synchrophasor Data frames. As this can be very verbose, this log file is **disabled** by default. You can enable it by appending `SYNCHROPHASOR::log_data_detail=T` to your `zeek` command on the command line or by adding `redef SYNCHROPHASOR::log_data_detail = T;` to your `local.zeek` file. Note that `log_data_frame` described above must also be set to `T` for `log_data_detail` to take effect.
-
-Most of the fields listed here are optional. Many may be unused during communication depending on device configuration. See IEEE Std C37.118.2-2011 for more details.
+This log provides details of each data field in the Security EPSEM service.
 
 #### Fields Captured
 
-| Field                           | Type           | Description                                                  |
-| --------------------------------|----------------|--------------------------------------------------------------|
-| ts                              | time           | Timestamp (network time)                                     |
-| uid                             | string         | Unique ID for this connection                                |
-| id                              | conn_id        | Default Zeek connection info (IP addresses, ports)           |
-| proto                           | string         | Transport protocol                                           |
-| frame_type                      | string         | Frame type from synchrophasor frame synchronization word     |
-| header_time_stamp               | time           | Timestamp from frame header                                  |
-| data_frame_id                   | string         | Unique string to correlate with synchrophasor_data_detail    |
-| pmu_idx                         | count          | 0-based index of PMU data within the data frame              |
-| trigger_reason                  | count          | Trigger reason                                               |
-| unlocked_time                   | count          | Unlocked time                                                |
-| pmu_time_quality                | count          | PMU time quality                                             |
-| data_modified                   | bool           | T = data made by post-processing, F = otherwise              |
-| config_change                   | bool           | T = confiuration change advised, F = change effected         |
-| pmu_trigger_pickup              | bool           | T = PMU trigger detected, F = no trigger                     |
-| data_sorting_type               | bool           | F = sort by time stamp, T = sort by arrival                  |
-| pmu_sync_error                  | bool           | T = time sync error, F = PMU in sync with time source        |
-| data_error_indicator            | count          | Data error indicator                                         |
-| est_rectangular_real            | vector<double> | Phasor estimate: rectangular real value                      |
-| est_rectangular_imaginary       | vector<double> | Phasor estimate: rectangular imaginary value                 |
-| est_polar_magnitude             | vector<double> | Phasor estimate: polar magnitude value                       |
-| est_polar_angle                 | vector<double> | Phasor estimate: polar angle radians                         |
-| freq_dev_mhz                    | double         | Frequency deviation from nominal, in mHz                     |
-| rocof                           | double         | ROCOF, in hertz per second times 100                         |
-| analog_data                     | vector<double> | User-defined analog data value                               |
-| digital                         | vector<count>  | User-defined digital status word                             |
+| Field                  | Type             | Description                                               |
+| -----------------------|------------------|-----------------------------------------------------------|
+| ts                     | time             | Timestamp (network time)                                  |
+| uid                    | string           | Unique ID for this connection                             |
+| id                     | conn_id          | Default Zeek connection info (IP addresses, ports)        |
+| proto                  | string           | Transport protocol                                        |
+| req_resp               | string           | Request/Response                                          |
+| password               | string           | 20 byte field containing password                         |
+| user_id                | int              | User identification code                                  |
+
+### Wait Service Log (c1222_wait_service.log)
+
+#### Overview
+
+This log provides details of each data field in the Wait EPSEM service.
+
+#### Fields Captured
+
+| Field                  | Type             | Description                                               |
+| -----------------------|------------------|-----------------------------------------------------------|
+| ts                     | time             | Timestamp (network time)                                  |
+| uid                    | string           | Unique ID for this connection                             |
+| id                     | conn_id          | Default Zeek connection info (IP addresses, ports)        |
+| proto                  | string           | Transport protocol                                        |
+| req_resp               | string           | Request/Response                                          |
+| time_s                 | int              | Requested wait period in seconds                          |
+
+### Deregistration Registration Service Log (c1222_dereg_reg_service.log)
+
+#### Overview
+
+This log provides details of each data field in the Deregistration and Registration EPSEM services.
+
+#### Fields Captured
+
+| Field                     | Type             | Description                                                              |
+| --------------------------|------------------|--------------------------------------------------------------------------|
+| ts                        | time             | Timestamp (network time)                                                 |
+| uid                       | string           | Unique ID for this connection                                            |
+| id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
+| proto                     | string           | Transport protocol                                                       |
+| req_resp                  | string           | Request/Response                                                         |
+| service_type              | string           | Name of the EPSEM service represented                                    |
+| node_type                 | vector of string | An identification of the C12.22 Node’s Attributes                        |
+| connection_type           | vector of string | An indication of the type of connection requested                        |
+| device_class              | string           | Device Class                                                             |
+| ap_title                  | string           | ApTitle of the C12.22 Node to be registered                              |
+| electronic_serial_number  | string           | Unique ISO object identifier assigned to this Device                     |
+| native_address            | string           | Native address to use to forward messages to this node                   |
+| notification_pattern      | string           | An ApTitle associated with the Node-population                           |
+| reg_period                | count            | Max period in seconds desired to elapse between re-registration requests |
+| reg_delay                 | int              | Max delay in seconds the deviceshould wait before registering            |
+| reg_info                  | vector of string | Registration Info                                                        |
+
+* The **`node_type`** field identifies a node's attributes:
+    - `RELAY` - Node is a C12.22 Relay
+    - `MASTER_RELAY` -  Node is a C12.22 Master Relay
+    - `HOST` - Node is a C12.22 Host
+    - `NOTIFICATION_HOST` - Node is a C12.22 Notification Host
+    - `AUTHENTIcATION_HOST` - Node is a C12.22 Authentication Host
+    - `END_DEVICE` - Node is a C12.19 Device
+    - `MY_DOMAIN_PATTERN` - the my-domain-pattern parameter is present
+    - `RESERVED` - a reserved bit is set
+
+* The **`connection_type`** field is an indication of the type of connection requested and the core capability related to this C12.22 Node in regard to its connection to the C12.22 Network Segment:
+    - `BROADCAST_AND_MULTICAST_SUPPORTED` - Node has the capability to accept broadcast and multicast messages
+    - `MESSAGE_ACCEPTANCE_WINDOW_SUPPORTED` - Node is capable of implementing time-based C12.22 Message acceptance windows
+    - `PLAYBACK_REJECTION_SUPPORTED` - Node is capable of performing playback rejection algorithms
+    - `CONNECTIONLESS_MODE_SUPPORTED` - Node is capable of implementing time-based C12.22 Message acceptance windows
+    - `ACCEPT_CONNECTIONLESS` - Node is capable of implementing time-based C12.22 Message acceptance windows
+    - `CONNECTION_MODE_SUPPORTED` - Node is capable of implementing time-based C12.22 Message acceptance windows
+    - `ACCEPT_CONNECTIONS` - Node is capable of implementing time-based C12.22 Message acceptance windows
+    - `RESERVED` - a reserved bit is set
+
+* The **`reg_info`** field identifies the following:
+    - `DIRECT_MESSAGING_AVAILABLE` - Indicates whether direct messaging is available
+    - `MESSAGE_ACCEPTANCE_WINDOW_MODE` - indicates this Node may enable its incoming message acceptance window
+    - `PLAYBACK_REJECTION_MODE` - indicates that this Node may enable its playback rejection mechanism
+    - `CONNECTIONLESS_MODE` - indicates whether this C12.22 Node shall enable its connectionless-mode communication capability
+    - `ACCEPT_CONNECTIONLESS` - the registering node shall accept unsolicited incoming connectionless messages
+    - `CONNECTION_MODE` - indicates whether this C12.22 Node shall enable its connection-mode communication capability
+    - `ACCEPT_CONNECTIONS` - the registering node shall accept incoming connections
+    - `RESERVED` - a reserved bit is set
+
+### Resolve Service Log (c1222_resolve_service.log)
+
+#### Overview
+
+This log provides details of each data field in the Resolve EPSEM services.
+
+#### Fields Captured
+
+| Field                     | Type             | Description                                                              |
+| --------------------------|------------------|--------------------------------------------------------------------------|
+| ts                        | time             | Timestamp (network time)                                                 |
+| uid                       | string           | Unique ID for this connection                                            |
+| id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
+| proto                     | string           | Transport protocol                                                       |
+| req_resp                  | string           | Request/Response                                                         |
+
+### Trace Service Log (c1222_trace_service.log)
+
+#### Overview
+
+This log provides details of each data field in the Trace EPSEM services.
+
+#### Fields Captured
+
+| Field                     | Type             | Description                                                              |
+| --------------------------|------------------|--------------------------------------------------------------------------|
+| ts                        | time             | Timestamp (network time)                                                 |
+| uid                       | string           | Unique ID for this connection                                            |
+| id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
+| proto                     | string           | Transport protocol                                                       |
+| req_resp                  | string           | Request/Response                                                         |
+
+### Service Error Log (c1222_service_error.log)
+
+#### Overview
+
+This log provides details protocol service error.
+
+#### Fields Captured
+
+| Field                     | Type             | Description                                                              |
+| --------------------------|------------------|--------------------------------------------------------------------------|
+| ts                        | time             | Timestamp (network time)                                                 |
+| uid                       | string           | Unique ID for this connection                                            |
+| id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
+| proto                     | string           | Transport protocol                                                       |
+| req_resp                  | string           | Request/Response                                                         |
+
 
 ## ICSNPP Packages
 

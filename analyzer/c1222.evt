@@ -136,6 +136,12 @@ on C1222::SecurityReq -> event C1222::SecurityReq(
     self
     );
 
+on C1222::ResponseOk -> event C1222::ResponseOk(
+    $conn,
+    $is_orig,
+    self
+    );
+
 on C1222::ResponseNok -> event C1222::ResponseNok(
     $conn,
     $is_orig,
@@ -175,6 +181,36 @@ on C1222::WriteReqPWrite -> event C1222::WriteReqPWrite(
     );
 
 on C1222::WriteReqOffset -> event C1222::WriteReqOffset(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::WaitReq -> event C1222::WaitReq(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::RegisterReq -> event C1222::RegisterReq(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::RegisterRespOk -> event C1222::RegisterRespOk(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::DeregisterReq -> event C1222::DeregisterReq(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::Trace -> event C1222::Trace(
     $conn,
     $is_orig,
     self

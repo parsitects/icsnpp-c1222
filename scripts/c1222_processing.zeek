@@ -45,6 +45,15 @@ hook set_read_write_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_dereg_reg_service_log(c: connection) {
+    if (! c?$c1222_dereg_reg_service_log)
+        c$c1222_dereg_reg_service_log = dereg_reg_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 hook set_logon_service_log(c: connection) {
     if (! c?$c1222_logon_service_log)
         c$c1222_logon_service_log = logon_service_log(
@@ -57,6 +66,24 @@ hook set_logon_service_log(c: connection) {
 hook set_security_service_log(c: connection) {
     if (! c?$c1222_security_service_log)
         c$c1222_security_service_log = security_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
+hook set_wait_service_log(c: connection) {
+    if (! c?$c1222_wait_service_log)
+        c$c1222_wait_service_log = wait_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
+hook set_trace_service_log(c: connection) {
+    if (! c?$c1222_trace_service_log)
+        c$c1222_trace_service_log = trace_service_log(
             $ts=network_time(),
             $uid=c$uid,
             $id=c$id,
@@ -248,7 +275,41 @@ event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek
 
     user_info_log$padding = user_info_value$footer$padding;
     user_info_log$mac = user_info_value$footer$mac;
-    user_info_log$epsem_control = user_info_value$epsem$epsemControl;
+
+    local epsem_ctr = userinformation$epsem$epsemControl;
+    local epsem_ctr_str: vector of string;
+
+    if(epsem_ctr$responseControl == 0){
+        epsem_ctr_str += "RESPONSE_CONTROL_ALWAYS_RESPOND";
+    }
+    else if(epsem_ctr$responseControl == 1) {
+        epsem_ctr_str += "RESPONSE_CONTROL_RESPOND_ON_EXCEPTION";
+    }
+    else if(epsem_ctr$responseControl == 2) {
+        epsem_ctr_str += "RESPONSE_CONTROL_NEVER_RESPOND";
+    }
+
+    if(epsem_ctr$securityMode == 0){
+        epsem_ctr_str += "SECURITY_MODE_CLEARTEXT";
+    }
+    else if(epsem_ctr$securityMode == 1){
+        epsem_ctr_str += "SECURITY_MODE_CLEARTEXT_WITH_AUTHENTICATION";
+    }
+    else if(epsem_ctr$securityMode == 2){
+        epsem_ctr_str += "SECURITY_MODE_CIPHERTEXT_WITH_AUTHENTICATION";
+    }
+
+    if(epsem_ctr$edClassIncluded == 1){
+        epsem_ctr_str += "ED_CLASS_INCLUDED";
+    }
+    if(epsem_ctr$proxyServiceUsed == 1){
+        epsem_ctr_str += "PROXY_SERVICE_USED";
+    }
+    if(epsem_ctr$recoverySession == 1){
+        epsem_ctr_str += "RECOVERY_SESSION";
+    }
+
+    user_info_log$epsem_control = epsem_ctr_str;
 
     #ed class
     local edClassIncluded = user_info_value$epsem$epsemControl$edClassIncluded;
@@ -298,6 +359,16 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
         read_write_log$service_type = "full-read";
         read_write_log$table_id = serviceType$fullread;
     }
+    else if(service == C1222_ENUMS::RequestResponseCodes_TRACE){
+        hook set_trace_service_log(c);
+        local traceObj = serviceType$trace;
+        local trace_log = c$c1222_trace_service_log;
+        trace_log$req_resp = "Req";
+
+        for (i,traceN in traceObj$trace){    
+            trace_log$ap_titles += getIdString(traceN);
+        }
+    }
 }
 
 event C1222::EndService(c: connection, is_orig: bool){
@@ -305,6 +376,9 @@ event C1222::EndService(c: connection, is_orig: bool){
     C1222::emit_c1222_read_write_service_log(c);
     C1222::emit_c1222_logon_service_log(c);
     C1222::emit_c1222_security_service_log(c);
+    C1222::emit_c1222_wait_service_log(c);
+    C1222::emit_c1222_dereg_reg_service_log(c);
+    C1222::emit_c1222_trace_service_log(c);
 }
 
 #Ident Resp
@@ -516,10 +590,176 @@ event C1222::WriteReqOffset(c: connection, is_orig: bool, req: Zeek_C1222::Write
     read_write_log$chksum += tableVal$cksum;
 }
 
+# DEREGISTER / REGISTER SERVICE LOGS ------------------------------------------------------
+
+event C1222::RegisterReq(c: connection, is_orig: bool, req: Zeek_C1222::RegisterReq) {
+    hook set_dereg_reg_service_log(c);
+
+    local dereg_reg_log = c$c1222_dereg_reg_service_log;
+    dereg_reg_log$req_resp = "Req";
+    dereg_reg_log$service_type = "register_req";
+
+    local node_type = req$nodetype;
+    local node_type_str: vector of string;
+
+    if(node_type$relay == 1){
+        node_type_str += "RELAY";
+    }
+    if(node_type$masterRelay == 1){
+        node_type_str += "MASTER_RELAY";
+    }
+    if(node_type$host == 1){
+        node_type_str += "HOST";
+    }
+    if(node_type$notificationHost == 1){
+        node_type_str += "NOTIFICATION_HOST";
+    }
+    if(node_type$authenticationHost == 1){
+        node_type_str += "AUTHENTICATION_HOST";
+    }
+    if(node_type$endDevice == 1){
+        node_type_str += "END_DEVICE";
+    }
+    if(node_type$reserved == 1){
+        node_type_str += "RESERVED";
+    }
+    if(node_type$myDomainPatternFlag == 1){
+        node_type_str += "MY_DOMAIN_PATTERN_FLAG";
+    }
+
+    dereg_reg_log$node_type = node_type_str;
+
+    local connection_type = req$connectiontype;
+    local connection_type_str: vector of string;
+
+    if(connection_type$broadcastAndMulticast == 1){
+        connection_type_str += "BROADCAST_AND_MULTICAST";
+    }
+    if(connection_type$messageAcceptWindow == 1){
+        connection_type_str += "MESSAGE_ACCEPT_WINDOW";
+    }
+    if(connection_type$playbackRejection == 1){
+        connection_type_str += "PLAYBACK_REJECTION";
+    }
+    if(connection_type$reserved == 1){
+        connection_type_str += "RESERVED";
+    }
+    if(connection_type$connectionlessMode == 1){
+        connection_type_str += "CONNECTIONLESS_MODE";
+    }
+    if(connection_type$acceptConnectionless == 1){
+        connection_type_str += "ACCEPT_CONNECTIONLESS";
+    }
+    if(connection_type$connectionMode == 1){
+        connection_type_str += "CONNECTION_MODE";
+    }
+    if(connection_type$acceptConnections == 1){
+        connection_type_str += "ACCEPT_CONNECTIONS";
+    }
+
+    dereg_reg_log$connection_type = connection_type_str;
+    dereg_reg_log$device_class = req$deviceClass$oidstring;
+    dereg_reg_log$ap_title = getIdString(req$apTitle);
+    dereg_reg_log$electronic_serial_number = getIdString(req$electronicSerialNumber);
+    dereg_reg_log$native_address = req$nativeAddress;
+    dereg_reg_log$reg_period = bytestring_to_count(req$registrationPeriod);
+    dereg_reg_log$notification_pattern = req$myDomainPattern$notifPattern;
+}
+
+event C1222::RegisterRespOk(c: connection, is_orig: bool, resp: Zeek_C1222::RegisterRespOk) {
+    hook set_dereg_reg_service_log(c);
+
+    local dereg_reg_log = c$c1222_dereg_reg_service_log;
+    dereg_reg_log$req_resp = "Resp";
+    dereg_reg_log$service_type = "register_resp_ok";
+
+    dereg_reg_log$ap_title = getIdString(resp$apTitle);
+    dereg_reg_log$reg_delay = resp$regDelay;
+    dereg_reg_log$reg_period = bytestring_to_count(resp$regPeriod);
+
+    local reg_info = resp$regInfo;
+    local reg_info_str: vector of string;
+
+    if(reg_info$directMessagingAvailable == 1){
+        reg_info_str += "DIRECT_MESSAGING_AVAILABLE";
+    }
+    if(reg_info$messageAcceptanceWindowMode == 1){
+        reg_info_str += "MESSAGE_ACCEPTANCE_WINDOW_MODE";
+    }
+    if(reg_info$playbackRejectionMode == 1){
+        reg_info_str += "PLAYBACK_REJECTION_MODE";
+    }
+    if(reg_info$reserved == 1){
+        reg_info_str += "RESERVED";
+    }
+    if(reg_info$connectionlessMode == 1){
+        reg_info_str += "CONNECTIONLESS_MODE";
+    }
+    if(reg_info$acceptConnectionless == 1){
+        reg_info_str += "ACCEPT_CONNECTIONLESS";
+    }
+    if(reg_info$connectionMode == 1){
+        reg_info_str += "CONNECTION_MODE";
+    }
+    if(reg_info$acceptConnections == 1){
+        reg_info_str += "ACCEPT_CONNECTIONS";
+    }
+
+    dereg_reg_log$reg_info = reg_info_str;
+}
+
+event C1222::DeregisterReq(c: connection, is_orig: bool, req: Zeek_C1222::DeregisterReq) {
+    hook set_dereg_reg_service_log(c);
+
+    local dereg_reg_log = c$c1222_dereg_reg_service_log;
+    dereg_reg_log$req_resp = "Req";
+    dereg_reg_log$service_type = "deregister_req";
+    dereg_reg_log$ap_title = getIdString(req$apTitle);
+}
+
 # ------------------------------------------------------------------------------
+
+#Wait Req
+event C1222::WaitReq(c: connection, is_orig: bool, req: Zeek_C1222::WaitReq) {
+    hook set_wait_service_log(c);
+
+    local wait_log = c$c1222_wait_service_log;
+    wait_log$req_resp = "Req";
+    wait_log$time_s = req$timeis;
+}
+
+event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::ResponseOk) {
+    if (resp$command == C1222_ENUMS::RequestResponseCodes_TRACE) {
+        local traceObj = resp$trace;
+
+        hook set_trace_service_log(c);
+
+        local trace_log = c$c1222_trace_service_log;
+        trace_log$req_resp = "Resp";
+
+        for (i,traceN in traceObj$trace){    
+            trace_log$ap_titles += getIdString(traceN);
+        }
+    }
+    else if (resp$command == C1222_ENUMS::RequestResponseCodes_DEREGISTER) {
+        hook set_dereg_reg_service_log(c);
+
+        local dereg_reg_log = c$c1222_dereg_reg_service_log;
+        dereg_reg_log$req_resp = "Resp";
+        dereg_reg_log$service_type = "deregister_resp_ok";
+    }
+    else if (resp$command == C1222_ENUMS::RequestResponseCodes_WAIT) {
+        hook set_wait_service_log(c);
+
+        local wait_log = c$c1222_wait_service_log;
+        wait_log$req_resp = "Resp";
+    }
+}
 
 #Error Resp
 event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222::ResponseNok) {
+    # ERROR LOG
+
     hook set_service_error_log(c);
 
     local error_log = c$c1222_service_error_log;
@@ -535,7 +775,20 @@ event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222:
         error_log$sigerr_resp = error_record$sigerrResp;
     }
 
-    #TODO: Add scripting to handle trace log on error
+    # TRACE LOG
+
+    if(error_record?$trace){
+        local traceObj = error_record$trace;
+
+        hook set_trace_service_log(c);
+
+        local trace_log = c$c1222_trace_service_log;
+        trace_log$req_resp = "Resp";
+
+        for (i,traceN in traceObj$trace){    
+            trace_log$ap_titles += getIdString(traceN);
+        }
+    }
 }
 
 #END PACKET

@@ -12,6 +12,9 @@ export {
               LOG_READ_WRITE_SERVICE_LOG,
               LOG_LOGON_SERVICE_LOG,
               LOG_SECURITY_SERVICE_LOG,
+              LOG_WAIT_SERVICE_LOG,
+              LOG_DEREG_REG_SERVICE_LOG,
+              LOG_TRACE_SERVICE_LOG,
               LOG_SERVICE_ERROR_LOG
 						  };
 
@@ -30,6 +33,12 @@ export {
   global log_policy_logon_service_log: Log::PolicyHook;
   global log_security_service_log: event(rec: security_service_log);
   global log_policy_security_service_log: Log::PolicyHook;
+  global log_wait_service_log: event(rec: wait_service_log);
+  global log_policy_wait_service_log: Log::PolicyHook;
+  global log_dereg_reg_service_log: event(rec: dereg_reg_service_log);
+  global log_policy_dereg_reg_service_log: Log::PolicyHook;
+  global log_trace_service_log: event(rec: trace_service_log);
+  global log_policy_trace_service_log: Log::PolicyHook;
   global log_service_error_log: event(rec: service_error_log);
   global log_policy_service_error_log: Log::PolicyHook;
 }
@@ -43,6 +52,9 @@ redef record connection += {
   c1222_read_write_service_log: read_write_service_log &optional;
   c1222_logon_service_log: logon_service_log &optional;
   c1222_security_service_log: security_service_log &optional;
+  c1222_wait_service_log: wait_service_log &optional;
+  c1222_dereg_reg_service_log: dereg_reg_service_log &optional;
+  c1222_trace_service_log: trace_service_log &optional;
   c1222_service_error_log: service_error_log &optional;
 };
 
@@ -97,6 +109,24 @@ event zeek_init() &priority=5 {
 						$ev=log_security_service_log, 
 						$path="c1222_security_service", 
 						$policy=log_policy_security_service_log]);
+
+  Log::create_stream(C1222::LOG_WAIT_SERVICE_LOG, 
+						[$columns=wait_service_log, 
+						$ev=log_wait_service_log, 
+						$path="c1222_wait_service", 
+						$policy=log_policy_wait_service_log]);
+
+  Log::create_stream(C1222::LOG_DEREG_REG_SERVICE_LOG, 
+						[$columns=dereg_reg_service_log, 
+						$ev=log_dereg_reg_service_log, 
+						$path="c1222_dereg_reg_service", 
+						$policy=log_policy_dereg_reg_service_log]);
+
+  Log::create_stream(C1222::LOG_TRACE_SERVICE_LOG, 
+						[$columns=trace_service_log, 
+						$ev=log_trace_service_log, 
+						$path="c1222_trace_service", 
+						$policy=log_policy_trace_service_log]);
 
   Log::create_stream(C1222::LOG_SERVICE_ERROR_LOG, 
 						[$columns=service_error_log, 
@@ -172,6 +202,27 @@ function emit_c1222_security_service_log(c: connection) {
         return;
     Log::write(C1222::LOG_SECURITY_SERVICE_LOG, c?$c1222_security_service_log);
     delete c$c1222_security_service_log;
+}
+
+function emit_c1222_wait_service_log(c: connection) {
+    if (! c?$c1222_wait_service_log )
+        return;
+    Log::write(C1222::LOG_WAIT_SERVICE_LOG, c?$c1222_wait_service_log);
+    delete c$c1222_wait_service_log;
+}
+
+function emit_c1222_dereg_reg_service_log(c: connection) {
+    if (! c?$c1222_dereg_reg_service_log )
+        return;
+    Log::write(C1222::LOG_DEREG_REG_SERVICE_LOG, c?$c1222_dereg_reg_service_log);
+    delete c$c1222_dereg_reg_service_log;
+}
+
+function emit_c1222_trace_service_log(c: connection) {
+    if (! c?$c1222_trace_service_log )
+        return;
+    Log::write(C1222::LOG_TRACE_SERVICE_LOG, c?$c1222_trace_service_log);
+    delete c$c1222_trace_service_log;
 }
 
 function emit_c1222_service_error_log(c: connection) {

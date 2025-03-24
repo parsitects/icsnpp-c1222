@@ -39,14 +39,6 @@ export {
         c1221_resp: string &optional &log;
     };
 
-    type user_information_epsem_control_log : record {
-        responseControl: count &optional;
-        securityMode: count &optional;
-        edClassIncluded: count &optional;
-        proxyServiceUsed: count &optional;
-        recoverySession: count &optional;
-    };
-
     ## Record type containing the column fields of the summary c12.22 log.
     type user_information_log: record {
         ts: time &log;
@@ -57,7 +49,7 @@ export {
         indirect_reference_encoding: int &optional &log;
         padding: string &optional &log;
         mac: string &optional &log;
-        epsem_control: user_information_epsem_control_log &optional &log;
+        epsem_control: vector of string &optional &log;
         ed_class: string &optional &log;
         encrypted_epsem: string &optional &log;
         services: vector of string &optional &log;
@@ -126,34 +118,50 @@ export {
         user_id: int &optional &log;
     };
 
-    #Wait
-        #request/response
-        #time
+    type wait_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
 
-    #Registration/Deregistration
-        #request/response
-        #Service Type
-        #node type
-        #conneciton type
-        #device class
-        #ap title
-        #electronic serial number
-        #native address
-        #registration period
-        #notification pattern
-        #reg-ap-title
-        #reg-delay
-        #reg-period
-        #reg-info
+        req_resp: string &optional &log;
+        time_s: int &optional &log;
+    };
+
+    type dereg_reg_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        service_type: string &optional &log;
+        node_type: vector of string &optional &log;
+        connection_type: vector of string &optional &log;
+        device_class: string &optional &log;
+        ap_title: string &optional &log;
+        electronic_serial_number: string &optional &log;
+        native_address: string &optional &log;
+        notification_pattern: string &optional &log;
+        reg_period: count &optional &log;
+        reg_delay: int &optional &log;
+        reg_info: vector of string &optional &log;
+    };
 
     #resolve
         #request/response
         #ap title
         #local address
 
-    #Trace
-        #request/resposne
-        #vector of aptitle
+    type trace_service_log : record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        ap_titles: vector of string &optional &log;
+    };
 
     type service_error_log: record {
         ts: time &log;

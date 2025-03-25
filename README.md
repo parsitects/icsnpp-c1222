@@ -315,6 +315,7 @@ This log provides details of each data field in the Trace EPSEM services.
 | id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
 | proto                     | string           | Transport protocol                                                       |
 | req_resp                  | string           | Request/Response                                                         |
+| ap_titles                 | vector of string | List of Node AP Titles                                                   |
 
 ### Service Error Log (c1222_service_error.log)
 
@@ -331,7 +332,11 @@ This log provides details protocol service error.
 | id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
 | proto                     | string           | Transport protocol                                                       |
 | req_resp                  | string           | Request/Response                                                         |
-
+| service                   | string           | Related Service Request Type generating the Error                        |
+| error_code                | string           | Error type generated                                                     |
+| rqtl_max_request_size     | int              | Request too large max request size                                       |
+| rstl_max_response_size    | int              | Response too large max response size                                     |
+| sigerr_resp               | string           | Segmentation Error Response                                              |
 
 ## ICSNPP Packages
 

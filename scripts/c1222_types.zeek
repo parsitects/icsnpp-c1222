@@ -101,21 +101,11 @@ export {
         proto: transport_proto &log;
 
         req_resp: string &optional &log;
+        service_type: string &optional &log;
         user_id: int &optional &log;
-        user: string &optional &log;
-        req_session_idle_timeout: int &optional &log;
-        resp_session_idle_timeout: int &optional &log;
-    };
-
-    type security_service_log: record {
-        ts: time &log;
-        uid: string &log;
-        id: conn_id &log;
-        proto: transport_proto &log;
-
-        req_resp: string &optional &log;
         password: string &optional &log;
-        user_id: int &optional &log;
+        user: string &optional &log;
+        session_idle_timeout: int &optional &log;
     };
 
     type wait_service_log: record {

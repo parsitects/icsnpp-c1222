@@ -299,6 +299,8 @@ This log provides details of each data field in the Resolve EPSEM services.
 | id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
 | proto                     | string           | Transport protocol                                                       |
 | req_resp                  | string           | Request/Response                                                         |
+| ap_title                  | string           | ApTitle of the requested C12.22 Node                                     |
+| local_address             | string           | Local address of the requested ApTitle                                   |
 
 ### Trace Service Log (c1222_trace_service.log)
 

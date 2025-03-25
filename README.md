@@ -388,4 +388,4 @@ Idaho National Laboratory is a national research facility with a focus on develo
 
 ### License
 
-Copyright 2023 Battelle Energy Alliance, LLC. Released under the terms of the 3-Clause BSD License (see [`LICENSE`](./LICENSE)).
+Copyright 2025 Battelle Energy Alliance, LLC. Released under the terms of the 3-Clause BSD License (see [`LICENSE`](./LICENSE)).

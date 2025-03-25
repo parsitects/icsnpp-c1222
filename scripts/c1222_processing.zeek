@@ -81,6 +81,15 @@ hook set_wait_service_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+hook set_resolve_service_log(c: connection) {
+    if (! c?$c1222_resolve_service_log)
+        c$c1222_resolve_service_log = resolve_service_log(
+            $ts=network_time(),
+            $uid=c$uid,
+            $id=c$id,
+            $proto=get_conn_transport_proto(c$id));
+}
+
 hook set_trace_service_log(c: connection) {
     if (! c?$c1222_trace_service_log)
         c$c1222_trace_service_log = trace_service_log(
@@ -379,6 +388,7 @@ event C1222::EndService(c: connection, is_orig: bool){
     C1222::emit_c1222_wait_service_log(c);
     C1222::emit_c1222_dereg_reg_service_log(c);
     C1222::emit_c1222_trace_service_log(c);
+    C1222::emit_c1222_resolve_service_log(c);
 }
 
 #Ident Resp
@@ -754,6 +764,27 @@ event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::Response
         local wait_log = c$c1222_wait_service_log;
         wait_log$req_resp = "Resp";
     }
+}
+
+#Resolve Log
+event C1222::ResolveReq(c: connection, is_orig: bool, req: Zeek_C1222::ResolveReq) {
+
+    hook set_resolve_service_log(c);
+
+    local resolve_log = c$c1222_resolve_service_log;
+    resolve_log$req_resp = "Req";
+    resolve_log$ap_title = getIdString(req$apTitle);
+
+}
+
+event C1222::ResolveRespOk(c: connection, is_orig: bool, resp: Zeek_C1222::ResolveRespOk) {
+
+    hook set_resolve_service_log(c);
+
+    local resolve_log = c$c1222_resolve_service_log;
+    resolve_log$req_resp = "Resp";
+    resolve_log$local_address = resp$localAddr;
+
 }
 
 #Error Resp

@@ -148,10 +148,16 @@ export {
         reg_info: vector of string &optional &log;
     };
 
-    #resolve
-        #request/response
-        #ap title
-        #local address
+    type resolve_service_log: record {
+        ts: time &log;
+        uid: string &log;
+        id: conn_id &log;
+        proto: transport_proto &log;
+
+        req_resp: string &optional &log;
+        ap_title: string &optional &log;
+        local_address: string &optional &log;
+    };
 
     type trace_service_log : record {
         ts: time &log;

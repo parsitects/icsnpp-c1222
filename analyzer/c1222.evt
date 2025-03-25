@@ -210,6 +210,18 @@ on C1222::DeregisterReq -> event C1222::DeregisterReq(
     self
     );
 
+on C1222::ResolveReq -> event C1222::ResolveReq(
+    $conn,
+    $is_orig,
+    self
+    );
+
+on C1222::ResolveRespOk -> event C1222::ResolveRespOk(
+    $conn,
+    $is_orig,
+    self
+    );
+
 on C1222::Trace -> event C1222::Trace(
     $conn,
     $is_orig,

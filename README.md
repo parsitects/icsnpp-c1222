@@ -8,13 +8,15 @@ ICSNPP-C12.22 is a Zeek plugin (written in [Spicy](https://docs.zeek.org/project
 
 This parser produces the following log files, defined in [analyzer/main.zeek](analyzer/main.zeek):
 
+By Default:
 * `c1222.log`
-* `c1222_authentication_value.log`
 * `c1222_user_information.log`
+
+Optional:
+* `c1222_authentication_value.log`
 * `c1222_identification_service.log`
 * `c1222_read_write_service.log`
 * `c1222_logon_service.log`
-* `c1222_security_service.log`
 * `c1222_wait_service.log`
 * `c1222_dereg_reg_service.log`
 * `c1222_resolve_service.log`
@@ -79,6 +81,26 @@ $ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
 * The **`calling_auth_value`** field contains a summary of the authentication mechanism used. Details of the calling 
 authentication value can be found in `c1222_authentication_value.log`.
 
+### User Information Element Summary Log (c1222_user_information.log)
+
+#### Overview
+
+This log summarizes the User Information Element and the EPSEM data.
+
+#### Fields Captured
+
+| Field             | Type           | Description                                               |
+| ----------------- |----------------|-----------------------------------------------------------|
+| ts                | time           | Timestamp (network time)                                  |
+| uid               | string         | Unique ID for this connection                             |
+| id                | conn_id        | Default Zeek connection info (IP addresses, ports)        |
+| proto             | string         | Transport protocol                                        |
+| frame_type        | string         | Frame type from synchrophasor frame synchronization word  |
+| frame_size        | count          | Frame size (in bytes)                                     |
+| header_time_stamp | time           | Timestamp from frame header                               |
+| command           | string         | String representation of the command                      |
+| data              | string         | Human-readable header data (user-defined)                 |
+
 ### Authentication Value Log (c1222_authentication_value.log)
 
 #### Overview
@@ -101,26 +123,6 @@ This log provides the values used for the authentication method in the message.
 | c1221_ident               | string         | C12.21 auth identification type                           |
 | c1221_req                 | string         | C12.21 auth request type                                  |
 | c1221_resp                | string         | C12.21 auth response type                                 |
-
-### User Information Element Summary Log (c1222_user_information.log)
-
-#### Overview
-
-This log summarizes the User Information Element and the EPSEM data.
-
-#### Fields Captured
-
-| Field             | Type           | Description                                               |
-| ----------------- |----------------|-----------------------------------------------------------|
-| ts                | time           | Timestamp (network time)                                  |
-| uid               | string         | Unique ID for this connection                             |
-| id                | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto             | string         | Transport protocol                                        |
-| frame_type        | string         | Frame type from synchrophasor frame synchronization word  |
-| frame_size        | count          | Frame size (in bytes)                                     |
-| header_time_stamp | time           | Timestamp from frame header                               |
-| command           | string         | String representation of the command                      |
-| data              | string         | Human-readable header data (user-defined)                 |
 
 ### Identification Service Log (c1222_identification_service.log)
 
@@ -176,7 +178,7 @@ This log provides details of each data field in the Read/Write EPSEM services.
 
 #### Overview
 
-This log provides details of each data field in the Logon EPSEM service.
+This log provides details of each data field in the Logon and Security EPSEM service.
 
 #### Fields Captured
 
@@ -187,28 +189,12 @@ This log provides details of each data field in the Logon EPSEM service.
 | id                        | conn_id          | Default Zeek connection info (IP addresses, ports)         |
 | proto                     | string           | Transport protocol                                         |
 | req_resp                  | string           | Request/Response                                           |
+| service_type              | string           | Name of the EPSEM service represented                      |
 | user_id                   | int              | User identification code                                   |
+| password                  | string           | 20 byte field containing password                          |
 | user                      | string           | 10 bytes containing user identification                    |
-| req_session_idle_timeout  | int              | Number of seconds a session may be idle before termination |
-| resp_session_idle_timeout | int              | Number of seconds a session may be idle before termination |
+| session_idle_timeout      | int              | Number of seconds a session may be idle before termination |
 
-### Security Service Log (c1222_security_service.log)
-
-#### Overview
-
-This log provides details of each data field in the Security EPSEM service.
-
-#### Fields Captured
-
-| Field                  | Type             | Description                                               |
-| -----------------------|------------------|-----------------------------------------------------------|
-| ts                     | time             | Timestamp (network time)                                  |
-| uid                    | string           | Unique ID for this connection                             |
-| id                     | conn_id          | Default Zeek connection info (IP addresses, ports)        |
-| proto                  | string           | Transport protocol                                        |
-| req_resp               | string           | Request/Response                                          |
-| password               | string           | 20 byte field containing password                         |
-| user_id                | int              | User identification code                                  |
 
 ### Wait Service Log (c1222_wait_service.log)
 

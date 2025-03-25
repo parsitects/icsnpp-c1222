@@ -1,7 +1,7 @@
 module C1222;
 
 export {
-    ## Record type containing the column fields of the summary c12.22 log.
+    # Record type containing the column fields of the summary c12.22 log.
     type summary_log: record {
         ts: time &log;
         uid: string &log;
@@ -22,7 +22,7 @@ export {
         calling_ap_invocation_id: string &optional &log;
     };
 
-    ## Record type containing the column fields of the summary c12.22 log.
+    # Record type containing the column fields of the summary c12.22 log.
     type authentication_value_log: record {
         ts: time &log;
         uid: string &log;
@@ -39,7 +39,7 @@ export {
         c1221_resp: string &optional &log;
     };
 
-    ## Record type containing the column fields of the summary c12.22 log.
+    # Record type containing the column fields of the summary c12.22 log.
     type user_information_log: record {
         ts: time &log;
         uid: string &log;
@@ -93,7 +93,7 @@ export {
         octet_count: int &optional &log;
     };
 
-    #Record type containing the column fields of the Logon service c12.22 log.
+    #Record type containing the column fields of the Logon and Security service c12.22 log.
     type logon_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -108,6 +108,7 @@ export {
         session_idle_timeout: int &optional &log;
     };
 
+    #Record type containing the column fields of the Wait service c12.22 log.
     type wait_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -118,6 +119,7 @@ export {
         time_s: int &optional &log;
     };
 
+    #Record type containing the column fields of the (de)registration service c12.22 log.
     type dereg_reg_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -138,6 +140,7 @@ export {
         reg_info: vector of string &optional &log;
     };
 
+    #Record type containing the column fields of the resolve service c12.22 log.
     type resolve_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -149,6 +152,7 @@ export {
         local_address: string &optional &log;
     };
 
+    #Record type containing the column fields of the trace service c12.22 log.
     type trace_service_log : record {
         ts: time &log;
         uid: string &log;
@@ -159,6 +163,7 @@ export {
         ap_titles: vector of string &optional &log;
     };
 
+    #Record type containing the column fields of the service error c12.22 log.
     type service_error_log: record {
         ts: time &log;
         uid: string &log;

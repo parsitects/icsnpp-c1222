@@ -1,5 +1,7 @@
 module C1222;
 
+# LOG HOOKS -------------------------------------------------------------
+
 hook set_session_summary_log(c: connection) {
     if ( ! c?$c1222_summary_log )
         c$c1222_summary_log = summary_log(
@@ -99,6 +101,8 @@ hook set_service_error_log(c: connection) {
             $proto=get_conn_transport_proto(c$id));
 }
 
+# HELP FUNCTIONS -------------------------------------------------------------
+
 function getIdString(ID: Zeek_C1222::ID): string{
     local tag = ID$tag;
     local returnVal: string;
@@ -122,6 +126,8 @@ function getServiceVectorLog(services: vector of Zeek_C1222::EpsemService): vect
 
     return service_vector;
 }
+
+# SUMMARY LOG -------------------------------------------------------------
 
 event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu) {
     hook set_session_summary_log(c);
@@ -213,6 +219,8 @@ event C1222::AscePdu(c: connection, is_orig: bool, ascepdu: Zeek_C1222::AscePdu)
     
 }
 
+# CALLING AUTH VALUE LOG -------------------------------------------------------------
+
 event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingauthenticationvalue: Zeek_C1222::CallingAuthenticationValue) {
 	hook set_authentication_value_log(c);
 
@@ -262,6 +270,7 @@ event C1222::CallingAuthenticationValue(c: connection, is_orig: bool, callingaut
 
 }
 
+# USER INFORMATION LOG -------------------------------------------------------------
 
 event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek_C1222::UserInformation) {
     hook set_user_information_log(c);
@@ -331,41 +340,7 @@ event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek
     }
 }
 
-event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Service){
-    local service = serviceType$serviceTag;
-
-    local read_write_log = c$c1222_read_write_service_log;
-
-    #Ident Req
-    if(service == C1222_ENUMS::RequestResponseCodes_IDENT){
-        hook set_identification_service_log(c);
-        local ident_log = c$c1222_identification_service_log;
-        ident_log$req_resp = "Req";
-    }
-    else if(service == C1222_ENUMS::RequestResponseCodes_PREADDEFAULT){
-        hook set_read_write_service_log(c);
-        read_write_log$req_resp = "Req";
-        read_write_log$service_type = "pread-default";
-    }
-    else if(service == C1222_ENUMS::RequestResponseCodes_FULLREAD){
-        hook set_read_write_service_log(c);
-        read_write_log$req_resp = "Req";
-        read_write_log$service_type = "full-read";
-        read_write_log$table_id = serviceType$fullread;
-    }
-    else if(service == C1222_ENUMS::RequestResponseCodes_TRACE){
-        hook set_trace_service_log(c);
-        local traceObj = serviceType$trace;
-        local trace_log = c$c1222_trace_service_log;
-        trace_log$req_resp = "Req";
-
-        for (i,traceN in traceObj$trace){    
-            trace_log$ap_titles += getIdString(traceN);
-        }
-    }
-}
-
-#Ident Resp
+# IDENT SERVICE RESPONSE -------------------------------------------------------------
 event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::ResponseOkIdent) {
     hook set_identification_service_log(c);
 
@@ -425,6 +400,7 @@ event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::Re
 
 }
 
+# LOGON LOG -------------------------------------------------------------
 #Logon Req
 event C1222::LogonReq(c: connection, is_orig: bool, req: Zeek_C1222::LogonReq) {
     hook set_logon_service_log(c);
@@ -704,8 +680,7 @@ event C1222::DeregisterReq(c: connection, is_orig: bool, req: Zeek_C1222::Deregi
     dereg_reg_log$ap_title = getIdString(req$apTitle);
 }
 
-# ------------------------------------------------------------------------------
-
+# WAIT SERVICE LOG ------------------------------------------------------
 #Wait Req
 event C1222::WaitReq(c: connection, is_orig: bool, req: Zeek_C1222::WaitReq) {
     hook set_wait_service_log(c);
@@ -715,7 +690,7 @@ event C1222::WaitReq(c: connection, is_orig: bool, req: Zeek_C1222::WaitReq) {
     wait_log$time_s = req$timeis;
 }
 
-#Resolve Log
+# RESOLVE SERVICE LOG ------------------------------------------------------
 event C1222::ResolveReq(c: connection, is_orig: bool, req: Zeek_C1222::ResolveReq) {
 
     hook set_resolve_service_log(c);
@@ -736,7 +711,7 @@ event C1222::ResolveRespOk(c: connection, is_orig: bool, resp: Zeek_C1222::Resol
 
 }
 
-#Error Resp
+# SERVICE ERROR LOG ------------------------------------------------------
 event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222::ResponseNok) {
     # ERROR LOG
 
@@ -764,6 +739,42 @@ event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222:
 
         local trace_log = c$c1222_trace_service_log;
         trace_log$req_resp = "Resp";
+
+        for (i,traceN in traceObj$trace){    
+            trace_log$ap_titles += getIdString(traceN);
+        }
+    }
+}
+
+# SHARED EVENTS------------------------------------------------------
+#Service Requests
+event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Service){
+    local service = serviceType$serviceTag;
+
+    local read_write_log = c$c1222_read_write_service_log;
+
+    #Ident Req
+    if(service == C1222_ENUMS::RequestResponseCodes_IDENT){
+        hook set_identification_service_log(c);
+        local ident_log = c$c1222_identification_service_log;
+        ident_log$req_resp = "Req";
+    }
+    else if(service == C1222_ENUMS::RequestResponseCodes_PREADDEFAULT){
+        hook set_read_write_service_log(c);
+        read_write_log$req_resp = "Req";
+        read_write_log$service_type = "pread-default";
+    }
+    else if(service == C1222_ENUMS::RequestResponseCodes_FULLREAD){
+        hook set_read_write_service_log(c);
+        read_write_log$req_resp = "Req";
+        read_write_log$service_type = "full-read";
+        read_write_log$table_id = serviceType$fullread;
+    }
+    else if(service == C1222_ENUMS::RequestResponseCodes_TRACE){
+        hook set_trace_service_log(c);
+        local traceObj = serviceType$trace;
+        local trace_log = c$c1222_trace_service_log;
+        trace_log$req_resp = "Req";
 
         for (i,traceN in traceObj$trace){    
             trace_log$ap_titles += getIdString(traceN);

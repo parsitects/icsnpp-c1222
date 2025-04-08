@@ -1,5 +1,18 @@
 module C1222;
 
+# LOG OPTIONS -------------------------------------------------------------
+option log_summary = T;
+option log_authentication_value = F;
+option log_user_information = T;
+option log_identification_service = F;
+option log_read_write_service = F;
+option log_dereg_reg_service = F;
+option log_logon_service = F;
+option log_wait_service = F;
+option log_resolve_service = F;
+option log_trace_service = F;
+option log_service_error = T;
+
 # LOG HOOKS -------------------------------------------------------------
 
 hook set_session_summary_log(c: connection) {
@@ -824,19 +837,41 @@ event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::Response
 
 #END SERVICE
 event C1222::EndService(c: connection, is_orig: bool){
-    C1222::emit_c1222_identification_service_log(c);
-    C1222::emit_c1222_read_write_service_log(c);
-    C1222::emit_c1222_logon_service_log(c);
-    C1222::emit_c1222_wait_service_log(c);
-    C1222::emit_c1222_dereg_reg_service_log(c);
-    C1222::emit_c1222_trace_service_log(c);
-    C1222::emit_c1222_resolve_service_log(c);
+    if(log_identification_service == T){
+        C1222::emit_c1222_identification_service_log(c);
+    }
+    if(log_read_write_service == T){
+        C1222::emit_c1222_read_write_service_log(c);
+    }
+    if(log_logon_service == T){
+        C1222::emit_c1222_logon_service_log(c);
+    }
+    if(log_wait_service == T){
+        C1222::emit_c1222_wait_service_log(c);
+    }
+    if(log_dereg_reg_service == T){
+        C1222::emit_c1222_dereg_reg_service_log(c);
+    }
+    if(log_trace_service == T){
+        C1222::emit_c1222_trace_service_log(c);
+    }
+    if(log_resolve_service == T){
+        C1222::emit_c1222_resolve_service_log(c);
+    }
 }
 
 #END PACKET
 event C1222::EndPacket(c: connection, is_orig: bool) {
-    C1222::emit_c1222_summary_log(c);
-    emit_c1222_authentication_value_log(c);
-    emit_c1222_user_information_log(c);
-    emit_c1222_service_error_log(c);
+    if(log_summary == T){
+        C1222::emit_c1222_summary_log(c);
+    }
+    if(log_authentication_value == T){
+        emit_c1222_authentication_value_log(c);
+    }
+    if(log_user_information == T){
+        emit_c1222_user_information_log(c);
+    }
+    if(log_service_error == T){
+        emit_c1222_service_error_log(c);
+    }
 }

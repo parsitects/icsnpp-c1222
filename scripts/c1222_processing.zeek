@@ -1,18 +1,5 @@
 module C1222;
 
-# LOG OPTIONS -------------------------------------------------------------
-option log_summary = T;
-option log_authentication_value = F;
-option log_user_information = T;
-option log_identification_service = F;
-option log_read_write_service = F;
-option log_dereg_reg_service = F;
-option log_logon_service = F;
-option log_wait_service = F;
-option log_resolve_service = F;
-option log_trace_service = F;
-option log_service_error = T;
-
 # LOG HOOKS -------------------------------------------------------------
 
 hook set_session_summary_log(c: connection) {

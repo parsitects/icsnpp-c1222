@@ -47,7 +47,10 @@ If users have ZKG configured to load packages (see `@load packages` in the [ZKG 
 
 #### Overview
 
-This log summarizes, by packet, ANSI C12.22 frames transmitted over 1153/tcp or 1153/udp to `c1222.log`. The port can be overriden by redefining the `c1222_ports_tcp` and `c1222_ports_udp` variables, respectively, e.g.:
+This log summarizes, by packet, ANSI C12.22 frames transmitted over 1153/tcp or 1153/udp to `c1222.log`. 
+This log is **enabled** by default. Users can enable it by appending `C1222::log_summary=F` to the `zeek` 
+command on the command line or by adding `redef C1222::log_summary = F;` to the `local.zeek` file.
+The port can be overriden by redefining the `c1222_ports_tcp` and `c1222_ports_udp` variables, respectively, e.g.:
 
 ```
 $ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
@@ -85,7 +88,9 @@ authentication value can be found in `c1222_authentication_value.log`.
 
 #### Overview
 
-This log summarizes the User Information Element and the EPSEM data.
+This log summarizes the User Information Element and the EPSEM data. This log is **enabled** by 
+default. Users can enable it by appending `C1222::log_user_information=F` to the `zeek` command on the command line or by adding 
+`redef C1222::log_user_information = F;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -105,7 +110,9 @@ This log summarizes the User Information Element and the EPSEM data.
 
 #### Overview
 
-This log provides the values used for the authentication method in the message.
+This log provides the values used for the authentication method in the message. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_authentication_value=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_authentication_value = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -128,7 +135,9 @@ This log provides the values used for the authentication method in the message.
 
 #### Overview
 
-This log provides details of each data field in the Identification EPSEM service.
+This log provides details of each data field in the Identification EPSEM service. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_identification_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_identification_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -153,7 +162,9 @@ This log provides details of each data field in the Identification EPSEM service
 
 #### Overview
 
-This log provides details of each data field in the Read/Write EPSEM services.
+This log provides details of each data field in the Read/Write EPSEM services. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_read_write_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_read_write_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -178,7 +189,9 @@ This log provides details of each data field in the Read/Write EPSEM services.
 
 #### Overview
 
-This log provides details of each data field in the Logon and Security EPSEM service.
+This log provides details of each data field in the Logon and Security EPSEM service. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_logon_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_logon_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -200,7 +213,9 @@ This log provides details of each data field in the Logon and Security EPSEM ser
 
 #### Overview
 
-This log provides details of each data field in the Wait EPSEM service.
+This log provides details of each data field in the Wait EPSEM service. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_wait_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_wait_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -217,7 +232,9 @@ This log provides details of each data field in the Wait EPSEM service.
 
 #### Overview
 
-This log provides details of each data field in the Deregistration and Registration EPSEM services.
+This log provides details of each data field in the Deregistration and Registration EPSEM services. This log is **disabled** by 
+default. Users can enable it by appending `C1222::log_dereg_reg_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_dereg_reg_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -274,7 +291,9 @@ This log provides details of each data field in the Deregistration and Registrat
 
 #### Overview
 
-This log provides details of each data field in the Resolve EPSEM services.
+This log provides details of each data field in the Resolve EPSEM services. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_resolve_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_resolve_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -292,7 +311,9 @@ This log provides details of each data field in the Resolve EPSEM services.
 
 #### Overview
 
-This log provides details of each data field in the Trace EPSEM services.
+This log provides details of each data field in the Trace EPSEM services. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_trace_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_trace_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -309,7 +330,9 @@ This log provides details of each data field in the Trace EPSEM services.
 
 #### Overview
 
-This log provides details protocol service error.
+This log provides details protocol service error. This log is **enabled** by default. Users can 
+enable it by appending `C1222::log_service_error=F` to the `zeek` command on the command line or by adding 
+`redef C1222::log_service_error = F;` to the `local.zeek` file.
 
 #### Fields Captured
 

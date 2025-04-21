@@ -1,7 +1,22 @@
 module C1222;
 
 export {
-    ## Record type containing the column fields of the summary c12.22 log.
+
+    # LOG OPTIONS -------------------------------------------------------------
+    option log_summary = T;
+    option log_authentication_value = F;
+    option log_user_information = T;
+    option log_identification_service = F;
+    option log_read_write_service = F;
+    option log_dereg_reg_service = F;
+    option log_logon_service = F;
+    option log_wait_service = F;
+    option log_resolve_service = F;
+    option log_trace_service = F;
+    option log_service_error = T;
+
+
+    # Record type containing the column fields of the summary c12.22 log.
     type summary_log: record {
         ts: time &log;
         uid: string &log;
@@ -22,7 +37,7 @@ export {
         calling_ap_invocation_id: string &optional &log;
     };
 
-    ## Record type containing the column fields of the summary c12.22 log.
+    # Record type containing the column fields of the summary c12.22 log.
     type authentication_value_log: record {
         ts: time &log;
         uid: string &log;
@@ -39,7 +54,7 @@ export {
         c1221_resp: string &optional &log;
     };
 
-    ## Record type containing the column fields of the summary c12.22 log.
+    # Record type containing the column fields of the summary c12.22 log.
     type user_information_log: record {
         ts: time &log;
         uid: string &log;
@@ -93,7 +108,7 @@ export {
         octet_count: int &optional &log;
     };
 
-    #Record type containing the column fields of the Logon service c12.22 log.
+    #Record type containing the column fields of the Logon and Security service c12.22 log.
     type logon_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -101,23 +116,14 @@ export {
         proto: transport_proto &log;
 
         req_resp: string &optional &log;
+        service_type: string &optional &log;
         user_id: int &optional &log;
-        user: string &optional &log;
-        req_session_idle_timeout: int &optional &log;
-        resp_session_idle_timeout: int &optional &log;
-    };
-
-    type security_service_log: record {
-        ts: time &log;
-        uid: string &log;
-        id: conn_id &log;
-        proto: transport_proto &log;
-
-        req_resp: string &optional &log;
         password: string &optional &log;
-        user_id: int &optional &log;
+        user: string &optional &log;
+        session_idle_timeout: int &optional &log;
     };
 
+    #Record type containing the column fields of the Wait service c12.22 log.
     type wait_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -128,6 +134,7 @@ export {
         time_s: int &optional &log;
     };
 
+    #Record type containing the column fields of the (de)registration service c12.22 log.
     type dereg_reg_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -148,6 +155,7 @@ export {
         reg_info: vector of string &optional &log;
     };
 
+    #Record type containing the column fields of the resolve service c12.22 log.
     type resolve_service_log: record {
         ts: time &log;
         uid: string &log;
@@ -159,6 +167,7 @@ export {
         local_address: string &optional &log;
     };
 
+    #Record type containing the column fields of the trace service c12.22 log.
     type trace_service_log : record {
         ts: time &log;
         uid: string &log;
@@ -169,6 +178,7 @@ export {
         ap_titles: vector of string &optional &log;
     };
 
+    #Record type containing the column fields of the service error c12.22 log.
     type service_error_log: record {
         ts: time &log;
         uid: string &log;

@@ -8,13 +8,15 @@ ICSNPP-C12.22 is a Zeek plugin (written in [Spicy](https://docs.zeek.org/project
 
 This parser produces the following log files, defined in [analyzer/main.zeek](analyzer/main.zeek):
 
+By Default:
 * `c1222.log`
-* `c1222_authentication_value.log`
 * `c1222_user_information.log`
+
+Optional:
+* `c1222_authentication_value.log`
 * `c1222_identification_service.log`
 * `c1222_read_write_service.log`
 * `c1222_logon_service.log`
-* `c1222_security_service.log`
 * `c1222_wait_service.log`
 * `c1222_dereg_reg_service.log`
 * `c1222_resolve_service.log`
@@ -45,7 +47,10 @@ If users have ZKG configured to load packages (see `@load packages` in the [ZKG 
 
 #### Overview
 
-This log summarizes, by packet, ANSI C12.22 frames transmitted over 1153/tcp or 1153/udp to `c1222.log`. The port can be overriden by redefining the `c1222_ports_tcp` and `c1222_ports_udp` variables, respectively, e.g.:
+This log summarizes, by packet, ANSI C12.22 frames transmitted over 1153/tcp or 1153/udp to `c1222.log`. 
+This log is **enabled** by default. Users can enable it by appending `C1222::log_summary=F` to the `zeek` 
+command on the command line or by adding `redef C1222::log_summary = F;` to the `local.zeek` file.
+The port can be overriden by redefining the `c1222_ports_tcp` and `c1222_ports_udp` variables, respectively, e.g.:
 
 ```
 $ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
@@ -79,11 +84,35 @@ $ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
 * The **`calling_auth_value`** field contains a summary of the authentication mechanism used. Details of the calling 
 authentication value can be found in `c1222_authentication_value.log`.
 
+### User Information Element Summary Log (c1222_user_information.log)
+
+#### Overview
+
+This log summarizes the User Information Element and the EPSEM data. This log is **enabled** by 
+default. Users can enable it by appending `C1222::log_user_information=F` to the `zeek` command on the command line or by adding 
+`redef C1222::log_user_information = F;` to the `local.zeek` file.
+
+#### Fields Captured
+
+| Field             | Type           | Description                                               |
+| ----------------- |----------------|-----------------------------------------------------------|
+| ts                | time           | Timestamp (network time)                                  |
+| uid               | string         | Unique ID for this connection                             |
+| id                | conn_id        | Default Zeek connection info (IP addresses, ports)        |
+| proto             | string         | Transport protocol                                        |
+| frame_type        | string         | Frame type from synchrophasor frame synchronization word  |
+| frame_size        | count          | Frame size (in bytes)                                     |
+| header_time_stamp | time           | Timestamp from frame header                               |
+| command           | string         | String representation of the command                      |
+| data              | string         | Human-readable header data (user-defined)                 |
+
 ### Authentication Value Log (c1222_authentication_value.log)
 
 #### Overview
 
-This log provides the values used for the authentication method in the message.
+This log provides the values used for the authentication method in the message. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_authentication_value=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_authentication_value = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -102,31 +131,13 @@ This log provides the values used for the authentication method in the message.
 | c1221_req                 | string         | C12.21 auth request type                                  |
 | c1221_resp                | string         | C12.21 auth response type                                 |
 
-### User Information Element Summary Log (c1222_user_information.log)
-
-#### Overview
-
-This log summarizes the User Information Element and the EPSEM data.
-
-#### Fields Captured
-
-| Field             | Type           | Description                                               |
-| ----------------- |----------------|-----------------------------------------------------------|
-| ts                | time           | Timestamp (network time)                                  |
-| uid               | string         | Unique ID for this connection                             |
-| id                | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto             | string         | Transport protocol                                        |
-| frame_type        | string         | Frame type from synchrophasor frame synchronization word  |
-| frame_size        | count          | Frame size (in bytes)                                     |
-| header_time_stamp | time           | Timestamp from frame header                               |
-| command           | string         | String representation of the command                      |
-| data              | string         | Human-readable header data (user-defined)                 |
-
 ### Identification Service Log (c1222_identification_service.log)
 
 #### Overview
 
-This log provides details of each data field in the Identification EPSEM service.
+This log provides details of each data field in the Identification EPSEM service. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_identification_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_identification_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -151,7 +162,9 @@ This log provides details of each data field in the Identification EPSEM service
 
 #### Overview
 
-This log provides details of each data field in the Read/Write EPSEM services.
+This log provides details of each data field in the Read/Write EPSEM services. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_read_write_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_read_write_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -176,7 +189,9 @@ This log provides details of each data field in the Read/Write EPSEM services.
 
 #### Overview
 
-This log provides details of each data field in the Logon EPSEM service.
+This log provides details of each data field in the Logon and Security EPSEM service. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_logon_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_logon_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -187,34 +202,20 @@ This log provides details of each data field in the Logon EPSEM service.
 | id                        | conn_id          | Default Zeek connection info (IP addresses, ports)         |
 | proto                     | string           | Transport protocol                                         |
 | req_resp                  | string           | Request/Response                                           |
+| service_type              | string           | Name of the EPSEM service represented                      |
 | user_id                   | int              | User identification code                                   |
+| password                  | string           | 20 byte field containing password                          |
 | user                      | string           | 10 bytes containing user identification                    |
-| req_session_idle_timeout  | int              | Number of seconds a session may be idle before termination |
-| resp_session_idle_timeout | int              | Number of seconds a session may be idle before termination |
+| session_idle_timeout      | int              | Number of seconds a session may be idle before termination |
 
-### Security Service Log (c1222_security_service.log)
-
-#### Overview
-
-This log provides details of each data field in the Security EPSEM service.
-
-#### Fields Captured
-
-| Field                  | Type             | Description                                               |
-| -----------------------|------------------|-----------------------------------------------------------|
-| ts                     | time             | Timestamp (network time)                                  |
-| uid                    | string           | Unique ID for this connection                             |
-| id                     | conn_id          | Default Zeek connection info (IP addresses, ports)        |
-| proto                  | string           | Transport protocol                                        |
-| req_resp               | string           | Request/Response                                          |
-| password               | string           | 20 byte field containing password                         |
-| user_id                | int              | User identification code                                  |
 
 ### Wait Service Log (c1222_wait_service.log)
 
 #### Overview
 
-This log provides details of each data field in the Wait EPSEM service.
+This log provides details of each data field in the Wait EPSEM service. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_wait_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_wait_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -231,7 +232,9 @@ This log provides details of each data field in the Wait EPSEM service.
 
 #### Overview
 
-This log provides details of each data field in the Deregistration and Registration EPSEM services.
+This log provides details of each data field in the Deregistration and Registration EPSEM services. This log is **disabled** by 
+default. Users can enable it by appending `C1222::log_dereg_reg_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_dereg_reg_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -288,7 +291,9 @@ This log provides details of each data field in the Deregistration and Registrat
 
 #### Overview
 
-This log provides details of each data field in the Resolve EPSEM services.
+This log provides details of each data field in the Resolve EPSEM services. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_resolve_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_resolve_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -306,7 +311,9 @@ This log provides details of each data field in the Resolve EPSEM services.
 
 #### Overview
 
-This log provides details of each data field in the Trace EPSEM services.
+This log provides details of each data field in the Trace EPSEM services. This log is **disabled** by default. Users can 
+enable it by appending `C1222::log_trace_service=T` to the `zeek` command on the command line or by adding 
+`redef C1222::log_trace_service = T;` to the `local.zeek` file.
 
 #### Fields Captured
 
@@ -323,7 +330,9 @@ This log provides details of each data field in the Trace EPSEM services.
 
 #### Overview
 
-This log provides details protocol service error.
+This log provides details protocol service error. This log is **enabled** by default. Users can 
+enable it by appending `C1222::log_service_error=F` to the `zeek` command on the command line or by adding 
+`redef C1222::log_service_error = F;` to the `local.zeek` file.
 
 #### Fields Captured
 

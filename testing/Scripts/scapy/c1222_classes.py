@@ -6,20 +6,18 @@ from c1222_enums import *
 ################################################################################
 
 authSetting = 0
-commandType = 0
+
+class LengthTypeOctet(Packet):
+    name = "Length Type Byte"
+    fields_desc = [
+        BitField("islong", None, 1), 
+        BitField("num", None, 7),
+    ]
 
 class LengthType(Packet):
     name = "Length Type"
     fields_desc = [
-        BitField("num", None, 7),
-        BitField("islong", None, 1),
-    ]
-
-class ID(Packet):
-    name = "ID"
-    fields_desc = [
-        ByteField("tag", None),
-        PacketField("len", None, LengthType),
+        PacketListField("octets", [], LengthTypeOctet)
     ]
 
 class ObjectIdentifierNibble(Packet):
@@ -31,14 +29,24 @@ class ObjectIdentifierNibble(Packet):
 class UniversalObjectIdentifier(Packet):
     name = "Universal Object Identifier"
     fields_desc = [
-        ConditionalField(ByteField("main", None), lambda pkt: pkt.tag == pkt.len>1),
-        PacketListField("sublist", [], ObjectIdentifierNibble, count_from=lambda pkt: pkt.len-1)
+        #ConditionalField(ByteField("main", None), lambda pkt: pkt.tag == pkt.len>1),
+        ByteField("main", None),
+        PacketListField("sublist", [], ObjectIdentifierNibble)
     ]
 
 class RelativeObjectIdentifier(Packet):
     name = "Relative Object Identifier"
     fields_desc = [
         PacketListField("sublist", [], ObjectIdentifierNibble, count_from=lambda pkt: pkt.len)
+    ]
+
+class ID(Packet):
+    name = "ID"
+    fields_desc = [
+        ByteField("tag", None),
+        PacketField("len", None, LengthType),
+        ConditionalField(PacketField("universalAptitleId", None, UniversalObjectIdentifier), lambda pkt: pkt.tag == IdentifierTags.UNIVERSAL.value),
+        ConditionalField(PacketField("relativeAptitleId", None, RelativeObjectIdentifier), lambda pkt: pkt.tag == IdentifierTags.RELATIVE.value)
     ]
 
 ################################################################################
@@ -88,7 +96,7 @@ class ReadReqPReadOffset(Packet):
 class TableData(Packet):
     name = "Table Data"
     fields_desc = [
-        FieldLenField("count_m", None, length_of="identification", fmt="H"), # unsigned short format
+        FieldLenField("count_m", None, length_of="data", fmt="H"), # unsigned short format
         StrLenField("data", "", length_from=lambda pkt: pkt.count_m),
         ByteField("cksum", None),
     ]
@@ -228,40 +236,40 @@ class ResponseOkIdent(Packet):
 class ResponseOk(Packet):
     name = "Response OK"
     fields_desc = [
-        ConditionalField(PacketField("identify", None, ResponseOkIdent), lambda pkt: pkt.command == RequestResponseCodes.IDENT.value),
-        ConditionalField(PacketField("fullread", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.FULLREAD.value),
-        ConditionalField(PacketField("preadone", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADONE.value),
-        ConditionalField(PacketField("preadtwo", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADTWO.value),
-        ConditionalField(PacketField("preadthree", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADTHREE.value),
-        ConditionalField(PacketField("preadfour", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADFOUR.value),
-        ConditionalField(PacketField("preadfive", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADFIVE.value),
-        ConditionalField(PacketField("preadsix", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADSIX.value),
-        ConditionalField(PacketField("preadseven", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADSEVEN.value),
-        ConditionalField(PacketField("preadeight", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADEIGHT.value),
-        ConditionalField(PacketField("preadnine", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADNINE.value),
-        ConditionalField(PacketField("preaddefault", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADDEFAULT.value),
-        ConditionalField(PacketField("preadoffset", None, ReadRespOk), lambda pkt: pkt.command == RequestResponseCodes.PREADOFFSET.value),
-        #ConditionalField(PacketField("fullwrite", None, void), lambda pkt: pkt.command == RequestResponseCodes.FULLWRITE.value),
-        #ConditionalField(PacketField("pwriteone", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITEONE.value),
-        #ConditionalField(PacketField("pwritetwo", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITETWO.value),
-        #ConditionalField(PacketField("pwritethree", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITETHREE.value),
-        #ConditionalField(PacketField("pwritefour", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITEFOUR.value),
-        #ConditionalField(PacketField("pwritefive", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITEFIVE.value),
-        #ConditionalField(PacketField("pwritesix", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITESIX.value),
-        #ConditionalField(PacketField("pwriteseven", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITESEVEN.value),
-        #ConditionalField(PacketField("pwriteeight", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITEEIGHT.value),
-        #ConditionalField(PacketField("pwritenine", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITENINE.value),
-        #ConditionalField(PacketField("pwriteoffset", None, void), lambda pkt: pkt.command == RequestResponseCodes.PWRITEOFFSET.value),
-        ConditionalField(PacketField("logon", None, LogonResp), lambda pkt: pkt.command == RequestResponseCodes.LOGON.value),
-        #ConditionalField(PacketField("security", None, void), lambda pkt: pkt.command == RequestResponseCodes.SECURITY.value),
-        #ConditionalField(PacketField("logoff", None, void), lambda pkt: pkt.command == RequestResponseCodes.LOGOFF.value),
-        #ConditionalField(PacketField("terminate", None, void), lambda pkt: pkt.command == RequestResponseCodes.TERMINATE.value),
-        #ConditionalField(PacketField("disconnect", None, void), lambda pkt: pkt.command == RequestResponseCodes.DISCONNECT.value),
-        #ConditionalField(PacketField("wait", None, void), lambda pkt: pkt.command == RequestResponseCodes.WAIT.value),
-        ConditionalField(PacketField("register", None, RegisterRespOk), lambda pkt: pkt.command == RequestResponseCodes.REGISTER.value),
-        #ConditionalField(PacketField("deregister", None, void), lambda pkt: pkt.command == RequestResponseCodes.DEREGISTER.value),
-        ConditionalField(PacketField("resolve", None, ResolveRespOk), lambda pkt: pkt.command == RequestResponseCodes.RESOLVE.value),
-        ConditionalField(PacketField("trace", None, Trace), lambda pkt: pkt.command == RequestResponseCodes.TRACE.value),
+        PacketField("identify", None, ResponseOkIdent),
+        PacketField("fullread", None, ReadRespOk),
+        PacketField("preadone", None, ReadRespOk),
+        PacketField("preadtwo", None, ReadRespOk),
+        PacketField("preadthree", None, ReadRespOk),
+        PacketField("preadfour", None, ReadRespOk),
+        PacketField("preadfive", None, ReadRespOk),
+        PacketField("preadsix", None, ReadRespOk),
+        PacketField("preadseven", None, ReadRespOk),
+        PacketField("preadeight", None, ReadRespOk),
+        PacketField("preadnine", None, ReadRespOk),
+        PacketField("preaddefault", None, ReadRespOk),
+        PacketField("preadoffset", None, ReadRespOk),
+        #PacketField("fullwrite", None, void),
+        #PacketField("pwriteone", None, void),
+        #PacketField("pwritetwo", None, void),
+        #PacketField("pwritethree", None, void),
+        #PacketField("pwritefour", None, void),
+        #PacketField("pwritefive", None, void),
+        #PacketField("pwritesix", None, void),
+        #PacketField("pwriteseven", None, void),
+        #PacketField("pwriteeight", None, void),
+        #PacketField("pwritenine", None, void),
+        #PacketField("pwriteoffset", None, void),),
+        PacketField("logon", None, LogonResp),
+        #PacketField("security", None, void),
+        #PacketField("logoff", None, void),
+        #PacketField("terminate", None, void),
+        #PacketField("disconnect", None, void),
+        #PacketField("wait", None, void),
+        PacketField("register", None, RegisterRespOk),
+        #PacketField("deregister", None, void),
+        PacketField("resolve", None, ResolveRespOk),
+        PacketField("trace", None, Trace),
     ]
 
 class Service(Packet):
@@ -287,7 +295,7 @@ class Service(Packet):
         ConditionalField(PacketField("rstl", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.RSTL.value),
         ConditionalField(PacketField("sgnp", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.SGNP.value),
         ConditionalField(PacketField("sgerr", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.SGERR.value),
-        #ConditionalField(PacketField("identify", None, ResponseOk), lambda pkt: pkt.serviceTag == RequestResponseCodes.IDENT.value),
+        #ConditionalField(PacketField("identify", None, void), lambda pkt: pkt.serviceTag == RequestResponseCodes.IDENT.value),
         ConditionalField(ShortField("fullread", None), lambda pkt: pkt.serviceTag == RequestResponseCodes.FULLREAD.value),
         ConditionalField(PacketField("preadone", None, ReadReqPRead), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADONE.value),
         ConditionalField(PacketField("preadtwo", None, ReadReqPRead), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADTWO.value),
@@ -298,7 +306,7 @@ class Service(Packet):
         ConditionalField(PacketField("preadseven", None, ReadReqPRead), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADSEVEN.value),
         ConditionalField(PacketField("preadeight", None, ReadReqPRead), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADEIGHT.value),
         ConditionalField(PacketField("preadnine", None, ReadReqPRead), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADNINE.value),
-        #ConditionalField(PacketField("preaddefault", None, ResponseOk), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADDEFAULT.value),
+        #ConditionalField(PacketField("preaddefault", None, void), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADDEFAULT.value),
         ConditionalField(PacketField("preadoffset", None, ReadReqPReadOffset), lambda pkt: pkt.serviceTag == RequestResponseCodes.PREADOFFSET.value),
         ConditionalField(PacketField("fullwrite", None, WriteReqFull), lambda pkt: pkt.serviceTag == RequestResponseCodes.FULLWRITE.value),
         ConditionalField(PacketField("pwriteone", None, WriteReqPWrite), lambda pkt: pkt.serviceTag == RequestResponseCodes.PWRITEONE.value),
@@ -313,9 +321,9 @@ class Service(Packet):
         ConditionalField(PacketField("pwriteoffset", None, WriteReqOffset), lambda pkt: pkt.serviceTag == RequestResponseCodes.PWRITEOFFSET.value),
         ConditionalField(PacketField("logon", None, LogonReq), lambda pkt: pkt.serviceTag == RequestResponseCodes.LOGON.value),
         ConditionalField(PacketField("security", None, SecurityReq), lambda pkt: pkt.serviceTag == RequestResponseCodes.SECURITY.value),
-        #ConditionalField(PacketField("logoff", None, ResponseOk), lambda pkt: pkt.serviceTag == RequestResponseCodes.LOGOFF.value),
-        #ConditionalField(PacketField("terminate", None, ResponseOk), lambda pkt: pkt.serviceTag == RequestResponseCodes.TERMINATE.value),
-        #ConditionalField(PacketField("disconnect", None, ResponseOk), lambda pkt: pkt.serviceTag == RequestResponseCodes.DISCONNECT.value),
+        #ConditionalField(PacketField("logoff", None, void), lambda pkt: pkt.serviceTag == RequestResponseCodes.LOGOFF.value),
+        #ConditionalField(PacketField("terminate", None, void), lambda pkt: pkt.serviceTag == RequestResponseCodes.TERMINATE.value),
+        #ConditionalField(PacketField("disconnect", None, void), lambda pkt: pkt.serviceTag == RequestResponseCodes.DISCONNECT.value),
         ConditionalField(PacketField("wait", None, WaitReq), lambda pkt: pkt.serviceTag == RequestResponseCodes.WAIT.value),
         ConditionalField(PacketField("register", None, RegisterReq), lambda pkt: pkt.serviceTag == RequestResponseCodes.REGISTER.value),
         ConditionalField(PacketField("deregister", None, DeregisterReq), lambda pkt: pkt.serviceTag == RequestResponseCodes.DEREGISTER.value),
@@ -344,12 +352,12 @@ class PlaintextEpsem(Packet):
 class Epsem(Packet):
     name = "Epsem"
     fields_desc = [
-        BitField("responseControl", None, 2),
-        BitField("securityMode", None, 2),
-        BitField("edClassIncluded", None, 1),
-        BitField("proxyServiceUsed", None, 1),
-        BitField("recoverySession", None, 1),
         BitField("extraBits", None, 1), # isn't actually used
+        BitField("recoverySession", None, 1),
+        BitField("proxyServiceUsed", None, 1),
+        BitField("edClassIncluded", None, 1),
+        BitField("securityMode", None, 2),
+        BitField("responseControl", None, 2),
         ConditionalField(NBytesField("edClass", None, 4), lambda pkt: pkt.edClassIncluded == 1),
         ConditionalField(StrField("encryptedEpsem", None), lambda pkt: pkt.securityMode==2),
         ConditionalField(PacketField("data", None, PlaintextEpsem), lambda pkt: pkt.securityMode==0 or pkt.securityMode==1),
@@ -560,12 +568,4 @@ class Message(Packet):
     name = "Message"
     fields_desc = [
         PacketListField("pdus", [], AscePdu, length_from=lambda pkt: pkt.num_inner)
-    ]
-
-class C1222Packet(Packet):
-    name = "c1222"
-    fields_desc = [
-        ByteField("first", 96),
-        ByteField("second", 71),
-        PacketField("message", None, Message),
     ]

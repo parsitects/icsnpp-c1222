@@ -359,8 +359,7 @@ type Epsem = unit(len: uint64) {
 };
 
 type PlaintextEpsem = unit{
-    data: EpsemService[];
-    : b"\x00";
+    data: EpsemService[] &eod;
 };
 
 
@@ -426,7 +425,7 @@ type Service = unit(len: uint64){
         C1222_ENUMS::RequestResponseCodes::TERMINATE     -> terminate    : void;
         C1222_ENUMS::RequestResponseCodes::DISCONNECT    -> disconnect   : void;
         C1222_ENUMS::RequestResponseCodes::WAIT          -> wait         : WaitReq;
-        C1222_ENUMS::RequestResponseCodes::REGISTER      -> register     : RegisterReq;
+        C1222_ENUMS::RequestResponseCodes::REGISTER      -> register_    : RegisterReq;
         C1222_ENUMS::RequestResponseCodes::DEREGISTER    -> deregister   : DeregisterReq;
         C1222_ENUMS::RequestResponseCodes::RESOLVE       -> resolve      : ResolveReq;
         C1222_ENUMS::RequestResponseCodes::TRACE         -> trace        : Trace(len-1);
@@ -464,7 +463,7 @@ type Service = unit(len: uint64){
     on terminate{commandContext.push_back(cast<uint8>(self.serviceTag));}
     on disconnect{commandContext.push_back(cast<uint8>(self.serviceTag));}
     on wait{commandContext.push_back(cast<uint8>(self.serviceTag));}
-    on register{commandContext.push_back(cast<uint8>(self.serviceTag));}
+    on register_{commandContext.push_back(cast<uint8>(self.serviceTag));}
     on deregister{commandContext.push_back(cast<uint8>(self.serviceTag));}
     on resolve{commandContext.push_back(cast<uint8>(self.serviceTag));}
     on trace{commandContext.push_back(cast<uint8>(self.serviceTag));}

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import logging
-
+import argparse
 from scapy.all import *
 from c1222_classes import *
 from packet_generators.read_write_service_packets_gen import *
@@ -33,19 +33,13 @@ class C1222PacketBuilder:
         self.src_mac = "00:11:22:33:44:55"
         self.dst_mac = "66:77:88:99:aa:bb"
 
-    def calculate_crc(self, message):
-        """Calculate CRC for the message"""
-        logger.debug(f"Calculating CRC for message of length {len(message)}")
-        crc16 = crcmod.mkCrcFun(0x18005, rev=True, initCrc=0xFFFF, xorOut=0x0000)
-        crc = crc16(message)
-        logger.debug(f"CRC calculated: {crc:04x}")
-        return crc.to_bytes(2, byteorder='little')
-
-    # def build_header(self, message):
-    #     """Build the C12.22 header bytes"""
-    #     header = b'\x60\x47'
-    #     logger.debug(f"Header built successfully: {header.hex()}")
-    #     return header
+    # def calculate_crc(self, message):
+    #     """Calculate CRC for the message"""
+    #     logger.debug(f"Calculating CRC for message of length {len(message)}")
+    #     crc16 = crcmod.mkCrcFun(0x18005, rev=True, initCrc=0xFFFF, xorOut=0x0000)
+    #     crc = crc16(message)
+    #     logger.debug(f"CRC calculated: {crc:04x}")
+    #     return crc.to_bytes(2, byteorder='little')
 
     def create_packet(self, message, is_response=False):
         """Create a single packet (TCP or UDP)"""
@@ -57,18 +51,23 @@ class C1222PacketBuilder:
             return self._create_udp_packet(message, is_response)
             
     def _create_tcp_packet(self, message, is_response=False):
-        #classObj = message_bytes(tableid=2, index=3, elementCount=8)
-        #logger.info(classObj)
+        if is_response:
+            # Response packet (from dst to src)
+            packet = Ether(src=self.dst_mac, dst=self.src_mac) / IP(src=self.dst_ip, dst=self.src_ip) / TCP(
+                sport=self.dst_port,
+                dport=self.src_port,
+                seq=self.initial_seq,
+                flags="PA"
+            ) / message
+        else:
+            # Request packet (from src to dst)
+            packet = Ether(src=self.src_mac, dst=self.dst_mac) / IP(src=self.src_ip, dst=self.dst_ip) / TCP(
+                sport=self.src_port,
+                dport=self.dst_port,
+                seq=self.initial_seq,
+                flags="PA"
+            ) / message
 
-        packet = Ether(src=self.dst_mac, dst=self.src_mac) / IP(src=self.dst_ip, dst=self.src_ip) / TCP(
-                    sport=self.dst_port,
-                    dport=self.src_port,
-                    seq=self.initial_seq,
-                    flags="PA"
-                ) / message
-
-        logger.info("Printing out summary")
-        logger.info(packet.summary())
         return packet
 
     def _create_udp_packet(self, message, is_response=False):
@@ -93,39 +92,15 @@ class C1222PacketBuilder:
         
         return packet
 
-    def build_pcap(self, message, output_file, is_response=False):
+    def build_pcap(self, packets, output_file):
         """Build and save the PCAP file"""
         try:
-            # header = self.build_header(message)
-            
-            # # Combine message and add CRC
-            # try:
-            #     logger.debug(f"Building message with header: {header.hex()}")
-            #     message = header + message
-            #     logger.debug(f"Message built successfully: {message.hex()}")
-            #     #message_with_crc = message # + self.calculate_crc(message)
-            # except Exception as e:
-            #     logger.error(f"Error building message: {str(e)}")
-            #     raise
-            
-            # Create and save packet
-            
-            packet = self.create_packet(message, is_response)
-            print("Printing out packet...")
-            print(packet)
-            wrpcap(output_file, [packet])
+            wrpcap(output_file, packets)
             logger.info(f"Successfully created {self.protocol.upper()} PCAP file: {output_file}")
-            
-        except ValueError as e:
-            logger.error(f"Invalid input or configuration: {str(e)}")
-            raise
-        except TypeError as e:
-            logger.error(f"Data type error while building packet: {str(e)}")
-            raise
         except Exception as e:
             logger.error(f"Unexpected error while creating PCAP: {str(e)}")
             raise
-    
+
 ################################################################################
 # Main Function
 ################################################################################
@@ -168,8 +143,18 @@ if "__main__" == __name__:
     output_file = args.output or f"{pcap_folder}/c1222_{type}_{req_resp}_{protocol_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pcap"
     
     if (args.type == "rw_service"):
-        builder.build_pcap(C1222Packet(message=createMessageFromService(rw_service)), output_file, is_response=args.res)
+        packets = [
+            builder.create_packet(createMessageFromService(rw_service_req, "req"), False),
+            builder.create_packet(createMessageFromService(rw_service_resp, "resp"), True)
+        ]
+
+        builder.build_pcap(packets, output_file)
     elif (args.type == "ident_service"):
-        builder.build_pcap(C1222Packet(message=createMessageFromService(ident_service)), output_file, is_response=args.res)
+        packets = [
+            builder.create_packet(createMessageFromService(ident_service_req, "req"), False),
+            builder.create_packet(createMessageFromService(ident_service_resp, "resp"), True)
+        ]
+
+        builder.build_pcap(packets, output_file)
     else:
         logger.error("The type passed in via --type is incorrect!")

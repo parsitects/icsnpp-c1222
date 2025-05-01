@@ -282,8 +282,14 @@ event C1222::UserInformation(c: connection, is_orig: bool, userinformation: Zeek
         user_info_log$indirect_reference_encoding = user_info_value$indirectReference$encoding;
     }
 
-    user_info_log$padding = user_info_value$footer$padding;
-    user_info_log$mac = user_info_value$footer$mac;
+    if(user_info_value?$footer){
+        if(user_info_value$footer?$padding){
+            user_info_log$padding = user_info_value$footer$padding;
+        }
+        if(user_info_value$footer?$mac){
+            user_info_log$mac = user_info_value$footer$mac;
+        }
+    }
 
     local epsem_ctr = userinformation$epsem$epsemControl;
     local epsem_ctr_str: vector of string;
@@ -444,6 +450,7 @@ event C1222::ReadReqPRead(c: connection, is_orig: bool, req: Zeek_C1222::ReadReq
     read_write_log$req_resp = "Req";
     read_write_log$service_type = "pread";
     read_write_log$table_id = req$tableid;
+    read_write_log$index = ""; # Have to initialize, set the value later
 
     # Display indices with decimals in between, ex: 3.1.1
     for (i,indexN in req$index) {

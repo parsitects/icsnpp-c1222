@@ -6,6 +6,7 @@ from scapy.all import *
 from c1222_classes import *
 from packet_generators.read_write_service_packets_gen import *
 from packet_generators.ident_service_packets_gen import *
+from packet_generators.trace_service_packets_gen import *
 from packet_generators.message_packet_gen import *
 
 logging.basicConfig(
@@ -116,7 +117,7 @@ if "__main__" == __name__:
     parser.add_argument('--dst-port', type=int, help='Destination port (default: 1153)')
     parser.add_argument('--comprehensive', '--all', action='store_true', help='Generate a comprehensive PCAP')
     parser.add_argument('--protocol', choices=['tcp', 'udp'], default='tcp', help='Protocol to use (default: tcp)')
-    parser.add_argument('--type', choices=['rw_service','ident_service'], default='rw_service', help='The type of packet to generate.')
+    parser.add_argument('--type', choices=['rw_service','ident_service', 'trace_service'], default='rw_service', help='The type of packet to generate.')
     args = parser.parse_args()
 
     if args.debug:
@@ -155,6 +156,13 @@ if "__main__" == __name__:
             builder.create_packet(createMessageFromService(ident_service_resp, "resp"), True)
         ]
 
+        builder.build_pcap(packets, output_file)
+    elif (args.type == "trace_service"):
+        packets = [
+            builder.create_packet(createMessageFromService(trace_service_req, "req"), False),
+            builder.create_packet(createMessageFromService(trace_service_resp, "resp"), True)
+        ]
+        
         builder.build_pcap(packets, output_file)
     else:
         logger.error("The type passed in via --type is incorrect!")

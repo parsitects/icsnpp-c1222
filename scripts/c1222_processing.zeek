@@ -484,17 +484,27 @@ event C1222::ReadRespOk(c: connection, is_orig: bool, resp: Zeek_C1222::ReadResp
     read_write_log$req_resp = "Resp";
     read_write_log$service_type = "readresp-ok";
 
+    local count_m_vector: vector of int;
+    local data_vector: vector of string;
+    local cksum_vector: vector of int;
+
     for (i,tableM in resp$tables) {
-        read_write_log$count_m += tableM$count_m;
-        read_write_log$data += tableM$data;
-        read_write_log$chksum += tableM$cksum;
+        count_m_vector += tableM$count_m;
+        data_vector += tableM$data;
+        cksum_vector += tableM$cksum;
     }
 
-    for (i,extraTable in resp$extratables) {
-        read_write_log$count_m += extraTable$count_m;
-        read_write_log$data += extraTable$data;
-        read_write_log$chksum += extraTable$cksum;
+    if(resp?$extratables){
+        for (i,extraTable in resp$extratables) {
+            count_m_vector += extraTable$count_m;
+            data_vector += extraTable$data;
+            cksum_vector += extraTable$cksum;
+        }
     }
+
+    read_write_log$count_m = count_m_vector;
+    read_write_log$data = data_vector;
+    read_write_log$chksum = cksum_vector;
 }
 
 #WriteReqFull

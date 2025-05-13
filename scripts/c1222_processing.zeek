@@ -450,7 +450,6 @@ event C1222::ReadReqPRead(c: connection, is_orig: bool, req: Zeek_C1222::ReadReq
     read_write_log$req_resp = "Req";
     read_write_log$service_type = "pread";
     read_write_log$table_id = req$tableid;
-    read_write_log$index = ""; # Have to initialize, set the value later
 
     # Display indices with decimals in between, ex: 3.1.1
     local index_str = "";
@@ -550,7 +549,7 @@ event C1222::WriteReqPWrite(c: connection, is_orig: bool, req: Zeek_C1222::Write
     read_write_log$table_id = req$tableid;
 
     # Display indices with decimals in between, ex: 3.1.1
-    local index_str: string;
+    local index_str = "";
     for (i,indexN in req$index) {
         if (i > 0) {
             index_str += ".";

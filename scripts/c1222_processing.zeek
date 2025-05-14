@@ -796,8 +796,6 @@ event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222:
 event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Service){
     local service = serviceType$serviceTag;
 
-    local read_write_log = c$c1222_read_write_service_log;
-
     #Ident Req
     if(service == C1222_ENUMS::RequestResponseCodes_IDENT){
         hook set_identification_service_log(c);
@@ -806,14 +804,14 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
     }
     else if(service == C1222_ENUMS::RequestResponseCodes_PREADDEFAULT){
         hook set_read_write_service_log(c);
-        read_write_log$req_resp = "Req";
-        read_write_log$service_type = "pread-default";
+        c$c1222_read_write_service_log$req_resp = "Req";
+        c$c1222_read_write_service_log$service_type = "pread-default";
     }
     else if(service == C1222_ENUMS::RequestResponseCodes_FULLREAD){
         hook set_read_write_service_log(c);
-        read_write_log$req_resp = "Req";
-        read_write_log$service_type = "full-read";
-        read_write_log$table_id = serviceType$fullread;
+        c$c1222_read_write_service_log$req_resp = "Req";
+        c$c1222_read_write_service_log$service_type = "full-read";
+        c$c1222_read_write_service_log$table_id = serviceType$fullread;
     }
     else if(service == C1222_ENUMS::RequestResponseCodes_TRACE){
         hook set_trace_service_log(c);

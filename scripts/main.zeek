@@ -179,55 +179,55 @@ function emit_c1222_user_information_log(c: connection) {
 function emit_c1222_identification_service_log(c: connection) {
     if (! c?$c1222_identification_service_log )
         return;
-    Log::write(C1222::LOG_IDENTIFICATION_SERVICE_LOG, c?$c1222_identification_service_log);
+    Log::write(C1222::LOG_IDENTIFICATION_SERVICE_LOG, c$c1222_identification_service_log);
     delete c$c1222_identification_service_log;
 }
 
 function emit_c1222_read_write_service_log(c: connection) {
     if (! c?$c1222_read_write_service_log )
         return;
-    Log::write(C1222::LOG_READ_WRITE_SERVICE_LOG, c?$c1222_read_write_service_log);
+    Log::write(C1222::LOG_READ_WRITE_SERVICE_LOG, c$c1222_read_write_service_log);
     delete c$c1222_read_write_service_log;
 }
 
 function emit_c1222_logon_service_log(c: connection) {
     if (! c?$c1222_logon_service_log )
         return;
-    Log::write(C1222::LOG_LOGON_SERVICE_LOG, c?$c1222_logon_service_log);
+    Log::write(C1222::LOG_LOGON_SERVICE_LOG, c$c1222_logon_service_log);
     delete c$c1222_logon_service_log;
 }
 
 function emit_c1222_wait_service_log(c: connection) {
     if (! c?$c1222_wait_service_log )
         return;
-    Log::write(C1222::LOG_WAIT_SERVICE_LOG, c?$c1222_wait_service_log);
+    Log::write(C1222::LOG_WAIT_SERVICE_LOG, c$c1222_wait_service_log);
     delete c$c1222_wait_service_log;
 }
 
 function emit_c1222_dereg_reg_service_log(c: connection) {
     if (! c?$c1222_dereg_reg_service_log )
         return;
-    Log::write(C1222::LOG_DEREG_REG_SERVICE_LOG, c?$c1222_dereg_reg_service_log);
+    Log::write(C1222::LOG_DEREG_REG_SERVICE_LOG, c$c1222_dereg_reg_service_log);
     delete c$c1222_dereg_reg_service_log;
 }
 
 function emit_c1222_resolve_service_log(c: connection) {
     if (! c?$c1222_resolve_service_log )
         return;
-    Log::write(C1222::LOG_RESOLVE_SERVICE_LOG, c?$c1222_resolve_service_log);
+    Log::write(C1222::LOG_RESOLVE_SERVICE_LOG, c$c1222_resolve_service_log);
     delete c$c1222_resolve_service_log;
 }
 
 function emit_c1222_trace_service_log(c: connection) {
     if (! c?$c1222_trace_service_log )
         return;
-    Log::write(C1222::LOG_TRACE_SERVICE_LOG, c?$c1222_trace_service_log);
+    Log::write(C1222::LOG_TRACE_SERVICE_LOG, c$c1222_trace_service_log);
     delete c$c1222_trace_service_log;
 }
 
 function emit_c1222_service_error_log(c: connection) {
     if (! c?$c1222_service_error_log )
         return;
-    Log::write(C1222::LOG_SERVICE_ERROR_LOG, c?$c1222_service_error_log);
+    Log::write(C1222::LOG_SERVICE_ERROR_LOG, c$c1222_service_error_log);
     delete c$c1222_service_error_log;
 }

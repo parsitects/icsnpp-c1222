@@ -169,7 +169,8 @@ class RegisterReqDomainPattern(Packet):
 class RegisterReq(Packet):
     name = "Register Req"
     fields_desc = [
-        BitField("nodetype", None, 8),
+        BitField("nodetype", None, 7),
+        BitField("isDomain", None, 1),
         BitField("connectionType", None, 8),
         PacketField("deviceClass", None, RelativeObjectIdentifier),
         PacketField("apTitle", None, ID),
@@ -177,7 +178,7 @@ class RegisterReq(Packet):
         FieldLenField("addressLen", None, length_of="nativeAddress", fmt="B"), # unsigned 8 bit integer format
         StrLenField("nativeAddress", "", length_from=lambda pkt: pkt.addressLen),
         NBytesField("registrationPeriod", None, 3),
-        ConditionalField(PacketField("myDomainPattern", None, RegisterReqDomainPattern), lambda pkt: pkt.tag == pkt.nodetype.myDomainPatternFlag==1),
+        ConditionalField(PacketField("myDomainPattern", None, RegisterReqDomainPattern), lambda pkt: pkt.isDomain==1),
     ]
 
 class RegisterRespOk(Packet):

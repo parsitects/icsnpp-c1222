@@ -9,6 +9,7 @@ from packet_generators.ident_service_packets_gen import *
 from packet_generators.trace_service_packets_gen import *
 from packet_generators.logon_service_packets_gen import *
 from packet_generators.registration_service_packets_gen import *
+from packet_generators.service_error_packets_gen import *
 from packet_generators.message_packet_gen import *
 
 logging.basicConfig(
@@ -119,7 +120,7 @@ if "__main__" == __name__:
     parser.add_argument('--dst-port', type=int, help='Destination port (default: 1153)')
     parser.add_argument('--comprehensive', '--all', action='store_true', help='Generate a comprehensive PCAP')
     parser.add_argument('--protocol', choices=['tcp', 'udp'], default='tcp', help='Protocol to use (default: tcp)')
-    parser.add_argument('--type', choices=['rw_service','ident_service', 'trace_service', 'logon_service', 'reg_service'], default='rw_service', help='The type of packet to generate.')
+    parser.add_argument('--type', choices=['rw_service','ident_service', 'trace_service', 'logon_service', 'reg_service', 'service_error'], default='rw_service', help='The type of packet to generate.')
     args = parser.parse_args()
 
     if args.debug:
@@ -177,6 +178,13 @@ if "__main__" == __name__:
         packets = [
             builder.create_packet(createMessageFromService(reg_service_req, "req"), False),
             builder.create_packet(createMessageFromService(reg_service_resp, "resp"), True)
+        ]
+
+        builder.build_pcap(packets, output_file)
+    elif (args.type == "service_error"):
+        packets = [
+            builder.create_packet(createMessageFromService(ident_service_req, "req"), False),
+            builder.create_packet(createMessageFromService(service_error_resp, "resp"), True)
         ]
 
         builder.build_pcap(packets, output_file)

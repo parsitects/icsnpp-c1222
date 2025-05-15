@@ -216,7 +216,7 @@ class Trace(Packet):
     ]
 
 class ResponseNok(Packet):
-    name = "Response OK"
+    name = "Response NoK"
     fields_desc = [
         ConditionalField(IntField("maxRequestSize", None), lambda pkt: pkt.code == RequestResponseCodes.RQTL.value),
         ConditionalField(IntField("maxResponseSize", None), lambda pkt: pkt.code == RequestResponseCodes.RSTL.value),
@@ -287,7 +287,7 @@ class Service(Packet):
         ConditionalField(PacketField("dnr", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.DNR.value),
         ConditionalField(PacketField("dlk", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.DLK.value),
         ConditionalField(PacketField("rno", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.RNO.value),
-        ConditionalField(PacketField("isss", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.ISSS.value),
+        #ConditionalField(PacketField("isss", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.ISSS.value),
         ConditionalField(PacketField("sme", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.SME.value),
         ConditionalField(PacketField("uat", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.UAT.value),
         ConditionalField(PacketField("nett", None, ResponseNok), lambda pkt: pkt.serviceTag == RequestResponseCodes.NETT.value),

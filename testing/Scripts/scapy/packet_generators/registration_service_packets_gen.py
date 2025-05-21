@@ -1,0 +1,106 @@
+from scapy.all import *
+from c1222_classes import *
+
+reg_service_req=Service(
+    serviceTag=RequestResponseCodes.REGISTER.value,
+    register=RegisterReq(
+        nodetype=126,
+        isDomain=1,
+        connectionType=239,
+        deviceClass=RelativeObjectIdentifier(
+            sublist=[
+                ObjectIdentifierNibble(data=0x01),
+                ObjectIdentifierNibble(data=0x82),
+                ObjectIdentifierNibble(data=0x85),
+                ObjectIdentifierNibble(data=0x63),
+            ]
+        ),
+        apTitle=ID(
+            tag=IdentifierTags.UNIVERSAL.value,
+            len=LengthType(
+                octets=[
+                    LengthTypeOctet(
+                        num=8,
+                        islong=0
+                    )
+                ]
+            ),
+            universalAptitleId= UniversalObjectIdentifier(
+                main=0x2b,
+                sublist=[
+                    ObjectIdentifierNibble(data=0x06),
+                    ObjectIdentifierNibble(data=0x01),
+                    ObjectIdentifierNibble(data=0x04),
+                    ObjectIdentifierNibble(data=0x01),
+                    ObjectIdentifierNibble(data=0x82),
+                    ObjectIdentifierNibble(data=0x85),
+                    ObjectIdentifierNibble(data=0x63),
+                ]
+            )
+        ),
+        electronicSerialNumber=ID(
+            tag=IdentifierTags.UNIVERSAL.value,
+            len=LengthType(
+                octets=[
+                    LengthTypeOctet(
+                        num=8,
+                        islong=0
+                    )
+                ]
+            ),
+            universalAptitleId= UniversalObjectIdentifier(
+                main=0x2b,
+                sublist=[
+                    ObjectIdentifierNibble(data=0x06),
+                    ObjectIdentifierNibble(data=0x01),
+                    ObjectIdentifierNibble(data=0x04),
+                    ObjectIdentifierNibble(data=0x01),
+                    ObjectIdentifierNibble(data=0x82),
+                    ObjectIdentifierNibble(data=0x85),
+                    ObjectIdentifierNibble(data=0x63),
+                ]
+            )
+        ),
+        addressLen=0x08,
+        nativeAddress="fizzbuzz",
+        registrationPeriod=0x010203,
+        myDomainPattern=RegisterReqDomainPattern(
+            notifPatternLen=4,
+            notifPattern="beef"
+        )
+    )
+)
+
+reg_service_resp=Service(
+    serviceTag=RequestResponseCodes.OK.value,
+    ok=ResponseOk(
+        logon=RegisterRespOk(
+                apTitle=ID(
+                tag=IdentifierTags.UNIVERSAL.value,
+                len=LengthType(
+                    octets=[
+                        LengthTypeOctet(
+                            num=8,
+                            islong=0
+                        )
+                    ]
+                ),
+                universalAptitleId= UniversalObjectIdentifier(
+                    main=0x2b,
+                    sublist=[
+                        ObjectIdentifierNibble(data=0x06),
+                        ObjectIdentifierNibble(data=0x01),
+                        ObjectIdentifierNibble(data=0x04),
+                        ObjectIdentifierNibble(data=0x01),
+                        ObjectIdentifierNibble(data=0x82),
+                        ObjectIdentifierNibble(data=0x85),
+                        ObjectIdentifierNibble(data=0x63),
+                    ]
+                )
+            ),
+            regDelay=3600,
+            regPeriod=0x000000,
+            regInfo=239
+        )
+    )
+)

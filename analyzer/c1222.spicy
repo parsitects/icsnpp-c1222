@@ -505,7 +505,7 @@ type ResponseOk = unit(len : uint64) {
         C1222_ENUMS::RequestResponseCodes::TERMINATE     -> terminate    : void;
         C1222_ENUMS::RequestResponseCodes::DISCONNECT    -> disconnect   : void;
         C1222_ENUMS::RequestResponseCodes::WAIT          -> wait         : void;
-        C1222_ENUMS::RequestResponseCodes::REGISTER      -> register     : RegisterRespOk;
+        C1222_ENUMS::RequestResponseCodes::REGISTER      -> register_     : RegisterRespOk;
         C1222_ENUMS::RequestResponseCodes::DEREGISTER    -> deregister   : void;
         C1222_ENUMS::RequestResponseCodes::RESOLVE       -> resolve      : ResolveRespOk;
         C1222_ENUMS::RequestResponseCodes::TRACE         -> trace        : Trace(len);
@@ -613,7 +613,7 @@ type ReadRespOk = unit(count: uint64){
     var extracount  : uint64 = 0;
     var i           : uint64 = 0;
     tables          : TableData[count] foreach{
-        if(self.tables[self.i].count_m == 0xFFFF){
+        if($$.count_m == 0xFFFF){
             self.extracount = self.extracount + 1;
         }
         self.i = self.i + 1;

@@ -450,17 +450,18 @@ event C1222::ReadReqPRead(c: connection, is_orig: bool, req: Zeek_C1222::ReadReq
     read_write_log$req_resp = "Req";
     read_write_log$service_type = "pread";
     read_write_log$table_id = req$tableid;
-    read_write_log$index = ""; # Have to initialize, set the value later
 
     # Display indices with decimals in between, ex: 3.1.1
+    local index_str = "";
     for (i,indexN in req$index) {
         if (i > 0) {
-            read_write_log$index += ".";
+            index_str += ".";
         }
 
-        read_write_log$index += cat(indexN);
+        index_str += cat(indexN);
     }
 
+    read_write_log$index = index_str;
     read_write_log$element_count = req$elementCount;
 }
 
@@ -484,17 +485,27 @@ event C1222::ReadRespOk(c: connection, is_orig: bool, resp: Zeek_C1222::ReadResp
     read_write_log$req_resp = "Resp";
     read_write_log$service_type = "readresp-ok";
 
+    local count_m_vector: vector of int;
+    local data_vector: vector of string;
+    local cksum_vector: vector of int;
+
     for (i,tableM in resp$tables) {
-        read_write_log$count_m += tableM$count_m;
-        read_write_log$data += tableM$data;
-        read_write_log$chksum += tableM$cksum;
+        count_m_vector += tableM$count_m;
+        data_vector += tableM$data;
+        cksum_vector += tableM$cksum;
     }
 
-    for (i,extraTable in resp$extratables) {
-        read_write_log$count_m += extraTable$count_m;
-        read_write_log$data += extraTable$data;
-        read_write_log$chksum += extraTable$cksum;
+    if(resp?$extratables){
+        for (i,extraTable in resp$extratables) {
+            count_m_vector += extraTable$count_m;
+            data_vector += extraTable$data;
+            cksum_vector += extraTable$cksum;
+        }
     }
+
+    read_write_log$count_m = count_m_vector;
+    read_write_log$data = data_vector;
+    read_write_log$chksum = cksum_vector;
 }
 
 #WriteReqFull
@@ -506,18 +517,26 @@ event C1222::WriteReqFull(c: connection, is_orig: bool, req: Zeek_C1222::WriteRe
     read_write_log$service_type = "full-write";
     read_write_log$table_id = req$tableid;
 
+
+    local count_m_vector: vector of int;
+    local data_vector: vector of string;
+    local cksum_vector: vector of int;
     local tableVal = req$table_m;
-    read_write_log$count_m += tableVal$count_m;
-    read_write_log$data += tableVal$data;
-    read_write_log$chksum += tableVal$cksum;
+    count_m_vector += tableVal$count_m;
+    data_vector += tableVal$data;
+    cksum_vector += tableVal$cksum;
 
     if (tableVal$count_m == 0xFFFF) { # extra table is valid
         local extraTable = req$extra;
 
-        read_write_log$count_m += extraTable$count_m;
-        read_write_log$data += extraTable$data;
-        read_write_log$chksum += extraTable$cksum; # TODO: Is adding the checksum acceptable here?
+        count_m_vector += extraTable$count_m;
+        data_vector += extraTable$data;
+        cksum_vector += extraTable$cksum; # TODO: Is adding the checksum acceptable here?
     }
+
+    read_write_log$count_m = count_m_vector;
+    read_write_log$data = data_vector;
+    read_write_log$chksum = cksum_vector;
 }
 
 #WriteReqPWrite
@@ -530,18 +549,29 @@ event C1222::WriteReqPWrite(c: connection, is_orig: bool, req: Zeek_C1222::Write
     read_write_log$table_id = req$tableid;
 
     # Display indices with decimals in between, ex: 3.1.1
+    local index_str = "";
     for (i,indexN in req$index) {
         if (i > 0) {
-            read_write_log$index += ".";
+            index_str += ".";
         }
 
-        read_write_log$index += cat(indexN);
+        index_str += cat(indexN);
     }
 
+    read_write_log$index = index_str;
+
+    local count_m_vector: vector of int;
+    local data_vector: vector of string;
+    local cksum_vector: vector of int;
+    
     local tableVal = req$table_m;
-    read_write_log$count_m += tableVal$count_m;
-    read_write_log$data += tableVal$data;
-    read_write_log$chksum += tableVal$cksum;
+    count_m_vector += tableVal$count_m;
+    data_vector += tableVal$data;
+    cksum_vector += tableVal$cksum;
+    
+    read_write_log$count_m = count_m_vector;
+    read_write_log$data = data_vector;
+    read_write_log$chksum = cksum_vector;
 }
 
 #WriteReqOffset
@@ -554,10 +584,18 @@ event C1222::WriteReqOffset(c: connection, is_orig: bool, req: Zeek_C1222::Write
     read_write_log$table_id = req$tableid;
     read_write_log$offset = bytestring_to_count(req$offset); 
     
+    local count_m_vector: vector of int;
+    local data_vector: vector of string;
+    local cksum_vector: vector of int;
+
     local tableVal = req$table_m;
-    read_write_log$count_m += tableVal$count_m;
-    read_write_log$data += tableVal$data;
-    read_write_log$chksum += tableVal$cksum;
+    count_m_vector += tableVal$count_m;
+    data_vector += tableVal$data;
+    cksum_vector += tableVal$cksum;
+
+    read_write_log$count_m = count_m_vector;
+    read_write_log$data = data_vector;
+    read_write_log$chksum = cksum_vector;
 }
 
 # DEREGISTER / REGISTER SERVICE LOGS ------------------------------------------------------
@@ -758,8 +796,6 @@ event C1222::ResponseNok(c: connection, is_orig: bool, error_record: Zeek_C1222:
 event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Service){
     local service = serviceType$serviceTag;
 
-    local read_write_log = c$c1222_read_write_service_log;
-
     #Ident Req
     if(service == C1222_ENUMS::RequestResponseCodes_IDENT){
         hook set_identification_service_log(c);
@@ -768,14 +804,14 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
     }
     else if(service == C1222_ENUMS::RequestResponseCodes_PREADDEFAULT){
         hook set_read_write_service_log(c);
-        read_write_log$req_resp = "Req";
-        read_write_log$service_type = "pread-default";
+        c$c1222_read_write_service_log$req_resp = "Req";
+        c$c1222_read_write_service_log$service_type = "pread-default";
     }
     else if(service == C1222_ENUMS::RequestResponseCodes_FULLREAD){
         hook set_read_write_service_log(c);
-        read_write_log$req_resp = "Req";
-        read_write_log$service_type = "full-read";
-        read_write_log$table_id = serviceType$fullread;
+        c$c1222_read_write_service_log$req_resp = "Req";
+        c$c1222_read_write_service_log$service_type = "full-read";
+        c$c1222_read_write_service_log$table_id = serviceType$fullread;
     }
     else if(service == C1222_ENUMS::RequestResponseCodes_TRACE){
         hook set_trace_service_log(c);
@@ -783,9 +819,11 @@ event C1222::Service(c: connection, is_orig: bool, serviceType: Zeek_C1222::Serv
         local trace_log = c$c1222_trace_service_log;
         trace_log$req_resp = "Req";
 
+        local trace_vector: vector of string;
         for (i,traceN in traceObj$trace){    
-            trace_log$ap_titles += getIdString(traceN);
+            trace_vector += getIdString(traceN);
         }
+        trace_log$ap_titles = trace_vector;
     }
 }
 
@@ -800,9 +838,11 @@ event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::Response
         local trace_log = c$c1222_trace_service_log;
         trace_log$req_resp = "Resp";
 
+        local trace_vector: vector of string;
         for (i,traceN in traceObj$trace){    
-            trace_log$ap_titles += getIdString(traceN);
+            trace_vector += getIdString(traceN);
         }
+        trace_log$ap_titles = trace_vector;
     }
     #DEREGISTER
     else if (resp$command == C1222_ENUMS::RequestResponseCodes_DEREGISTER) {

@@ -27,10 +27,14 @@ class C1222PacketBuilder:
         # Network configuration
         self.src_ip = src_ip or "192.168.100.124"
         self.dst_ip = dst_ip or "192.168.1.101"
-        self.src_port = src_port or 1153
-        self.dst_port = dst_port or 1577
+        self.src_port = src_port or 1577
+        self.dst_port = dst_port or 1153
         self.initial_seq = 100
         self.protocol = protocol.lower()
+        
+        # TCP sequence tracking
+        self.seq_num = self.initial_seq
+        self.ack_num = 0
         
         # Hardcoded MAC addresses to avoid ARP lookup warnings
         self.src_mac = "00:11:22:33:44:55"
@@ -53,23 +57,57 @@ class C1222PacketBuilder:
         else:  # UDP
             return self._create_udp_packet(message, is_response)
             
+    def _create_handshake_packets(self):
+        """Create TCP handshake packets (SYN, SYN-ACK, ACK)"""
+        packets = []
+        
+        # Use same ports as data packets for proper connection tracking
+        # SYN packet
+        syn = Ether(src=self.src_mac, dst=self.dst_mac) / IP(src=self.src_ip, dst=self.dst_ip) / TCP(
+            sport=self.src_port, dport=self.dst_port, seq=self.seq_num, flags="S")
+        packets.append(syn)
+        
+        # SYN-ACK packet
+        syn_ack = Ether(src=self.dst_mac, dst=self.src_mac) / IP(src=self.dst_ip, dst=self.src_ip) / TCP(
+            sport=self.dst_port, dport=self.src_port, seq=1000, ack=self.seq_num + 1, flags="SA")
+        packets.append(syn_ack)
+        
+        # ACK packet
+        ack = Ether(src=self.src_mac, dst=self.dst_mac) / IP(src=self.src_ip, dst=self.dst_ip) / TCP(
+            sport=self.src_port, dport=self.dst_port, seq=self.seq_num + 1, ack=1001, flags="A")
+        packets.append(ack)
+        
+        # Update sequence numbers for data packets
+        self.seq_num += 1
+        self.ack_num = 1001
+        
+        return packets
+
     def _create_tcp_packet(self, message, is_response=False):
+        message_bytes = bytes(message)
+        
         if is_response:
             # Response packet (from dst to src)
             packet = Ether(src=self.dst_mac, dst=self.src_mac) / IP(src=self.dst_ip, dst=self.src_ip) / TCP(
                 sport=self.dst_port,
                 dport=self.src_port,
-                seq=self.initial_seq,
+                seq=self.ack_num,
+                ack=self.seq_num,
                 flags="PA"
             ) / message
+            # Update sequence numbers after response
+            self.ack_num += len(message_bytes)
         else:
             # Request packet (from src to dst)
             packet = Ether(src=self.src_mac, dst=self.dst_mac) / IP(src=self.src_ip, dst=self.dst_ip) / TCP(
                 sport=self.src_port,
                 dport=self.dst_port,
-                seq=self.initial_seq,
+                seq=self.seq_num,
+                ack=self.ack_num,
                 flags="PA"
             ) / message
+            # Update sequence numbers after request
+            self.seq_num += len(message_bytes)
 
         return packet
 
@@ -135,7 +173,6 @@ if "__main__" == __name__:
         protocol=args.protocol
     )
 
-    req_resp = "response" if args.res else "request"
     protocol_suffix = args.protocol
 
     if (args.type == ""):
@@ -143,41 +180,56 @@ if "__main__" == __name__:
 
     type = args.type
     pcap_folder = "../../Traces"
-    output_file = args.output or f"{pcap_folder}/c1222_{type}_{req_resp}_{protocol_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pcap"
+    output_file = args.output or f"{pcap_folder}/c1222_{type}_comprehensive_{protocol_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pcap"
     
     if (args.type == "rw_service"):
-        packets = [
+        packets = []
+        if args.protocol == 'tcp':
+            packets.extend(builder._create_handshake_packets())
+        packets.extend([
             builder.create_packet(createMessageFromService(rw_service_req, "req"), False),
             builder.create_packet(createMessageFromService(rw_service_resp, "resp"), True)
-        ]
+        ])
 
         builder.build_pcap(packets, output_file)
     elif (args.type == "ident_service"):
-        packets = [
+        packets = []
+        if args.protocol == 'tcp':
+            packets.extend(builder._create_handshake_packets())
+        packets.extend([
             builder.create_packet(createMessageFromService(ident_service_req, "req"), False),
             builder.create_packet(createMessageFromService(ident_service_resp, "resp"), True)
-        ]
+        ])
 
         builder.build_pcap(packets, output_file)
     elif (args.type == "trace_service"):
-        packets = [
+        packets = []
+        if args.protocol == 'tcp':
+            packets.extend(builder._create_handshake_packets())
+        packets.extend([
             builder.create_packet(createMessageFromService(trace_service_req, "req"), False),
             builder.create_packet(createMessageFromService(trace_service_resp, "resp"), True)
-        ]
+        ])
         
         builder.build_pcap(packets, output_file)
     elif (args.type == "logon_service"):
-        packets = [
+        packets = []
+        if args.protocol == 'tcp':
+            packets.extend(builder._create_handshake_packets())
+        packets.extend([
             builder.create_packet(createMessageFromService(logon_service_req, "req"), False),
             builder.create_packet(createMessageFromService(logon_service_resp, "resp"), True)
-        ]
+        ])
 
         builder.build_pcap(packets, output_file)
     elif (args.type == "reg_service"):
-        packets = [
+        packets = []
+        if args.protocol == 'tcp':
+            packets.extend(builder._create_handshake_packets())
+        packets.extend([
             builder.create_packet(createMessageFromService(reg_service_req, "req"), False),
             builder.create_packet(createMessageFromService(reg_service_resp, "resp"), True)
-        ]
+        ])
 
         builder.build_pcap(packets, output_file)
     else:

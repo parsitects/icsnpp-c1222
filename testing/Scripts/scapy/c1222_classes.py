@@ -64,7 +64,7 @@ class IdentDeviceIdentity(Packet):
     fields_desc = [
         FieldLenField("len", None, length_of="identification", fmt="I"), # unsigned integer format
         IntField("format", None),
-        StrLenField("identification", "", length_from=lambda pkt: pkt.len - 1),
+        NBytesField("identification", None, 10),
     ]
 
 class IdentFeature(Packet):

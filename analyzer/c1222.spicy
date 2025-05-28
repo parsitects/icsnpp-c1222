@@ -592,6 +592,12 @@ type IdentDeviceIdentity = unit {
     len             : uint8;
     format          : uint8;
     identification  : bytes &size=self.len-1;
+    on len{
+        print "len:%d" % $$;
+    }
+    on format{
+        print "format:%d" % $$;
+    }
 };
 
 #- 5.3.2.4.2 Read Service <pread-index> Pg. 25 ---------------------------------

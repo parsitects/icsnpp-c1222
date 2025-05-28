@@ -182,11 +182,11 @@ if "__main__" == __name__:
 
         builder.build_pcap(packets, output_file)
     elif (args.type == "security_service"):
-            packets = [
-                builder.create_packet(createMessageFromService(security_service_req, "req"), False),
-                builder.create_packet(createMessageFromService(security_service_resp, "resp"), True)
-            ]
+        packets = [
+            builder.create_packet(createMessageFromService(security_service_req, "req"), False),
+            builder.create_packet(createMessageFromService(security_service_resp, "resp"), True)
+        ]
 
-            builder.build_pcap(packets, output_file)
+        builder.build_pcap(packets, output_file)
     else:
         logger.error("The type passed in via --type is incorrect!")

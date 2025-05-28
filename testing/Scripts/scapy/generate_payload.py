@@ -148,8 +148,6 @@ class C1222PacketBuilder:
 if "__main__" == __name__:
     parser = argparse.ArgumentParser(description="Build ROC Plus PCAP files")
     parser.add_argument('--output', type=str, help='Output PCAP filename')
-    parser.add_argument('--req', action='store_true', help='Generate request packet')
-    parser.add_argument('--res', action='store_true', help='Generate response packet')
     parser.add_argument('--debug', action='store_true', help='Enable debug logging')
     parser.add_argument('--src-ip', type=str, help='Source IP address (default: 192.168.1.100)')
     parser.add_argument('--dst-ip', type=str, help='Destination IP address (default: 192.168.1.200)')
@@ -180,7 +178,7 @@ if "__main__" == __name__:
 
     type = args.type
     pcap_folder = "../../Traces"
-    output_file = args.output or f"{pcap_folder}/c1222_{type}_comprehensive_{protocol_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pcap"
+    output_file = args.output or f"{pcap_folder}/c1222_{type}_{protocol_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pcap"
     
     if (args.type == "rw_service"):
         packets = []

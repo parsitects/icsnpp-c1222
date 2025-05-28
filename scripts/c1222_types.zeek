@@ -12,7 +12,7 @@ export {
     option log_logon_service = F;
     option log_wait_service = F;
     option log_resolve_service = F;
-    option log_trace_service = T;
+    option log_trace_service = F;
     option log_service_error = T;
 
 

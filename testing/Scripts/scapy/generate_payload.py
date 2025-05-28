@@ -27,8 +27,8 @@ class C1222PacketBuilder:
         # Network configuration
         self.src_ip = src_ip or "192.168.100.124"
         self.dst_ip = dst_ip or "192.168.1.101"
-        self.src_port = src_port or 1577
-        self.dst_port = dst_port or 1153
+        self.src_port = src_port or 1153
+        self.dst_port = dst_port or 1577
         self.initial_seq = 100
         self.protocol = protocol.lower()
         

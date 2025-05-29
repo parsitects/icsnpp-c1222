@@ -62,8 +62,8 @@ class IdentSessionCtrl(Packet):
 class IdentDeviceIdentity(Packet):
     name = "IdentDeviceIdentity"
     fields_desc = [
-        FieldLenField("len", None, length_of="identification", fmt="I"), # unsigned integer format
-        IntField("format", None),
+        ByteField("len", None),
+        ByteField("format", None),
         NBytesField("identification", None, 10),
     ]
 

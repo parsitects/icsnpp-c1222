@@ -232,10 +232,13 @@ if "__main__" == __name__:
 
         builder.build_pcap(packets, output_file)
     elif (args.type == "security_service"):
-        packets = [
+        packets = []
+        if args.protocol == 'tcp':
+            packets.extend(builder._create_handshake_packets())
+        packets.extend([
             builder.create_packet(createMessageFromService(security_service_req, "req"), False),
             builder.create_packet(createMessageFromService(security_service_resp, "resp"), True)
-        ]
+        ])
 
         builder.build_pcap(packets, output_file)
     else:

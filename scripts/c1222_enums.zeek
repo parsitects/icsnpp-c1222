@@ -97,6 +97,7 @@ export {
 
 
     const IDENT_FEATURE_TAGS = {
+        [C1222_ENUMS::IdentFeatureTags_EOL]                 = "EOL",
         [C1222_ENUMS::IdentFeatureTags_SECURITY_MECHANISM]  = "Security Mechanism",
         [C1222_ENUMS::IdentFeatureTags_SESSION_CTRL]        = "Session Control",
         [C1222_ENUMS::IdentFeatureTags_DEVICE_CLASS]        = "Device Class",

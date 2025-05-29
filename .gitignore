@@ -178,3 +178,16 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# CMake build files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+analyzer/CMakeFiles/
+analyzer/Makefile
+analyzer/cmake_install.cmake
+cmake_install.cmake
+
+# Spicy files
+c1222.hlto
+spicy-modules

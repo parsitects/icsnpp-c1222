@@ -9,15 +9,78 @@ ident_service_resp=Service(
     serviceTag=RequestResponseCodes.OK.value,
     ok=ResponseOk(
         identify=ResponseOkIdent(
-            std=0,
-            ver=0,
-            rev=0,
+            std=0x03,
+            ver=0x01,
+            rev=0x00,
             features=[
                 IdentFeature(
-                    tag=0
+                    tag=0x04,
+                    securityMechanism=ID(
+                        tag=IdentifierTags.UNIVERSAL.value,
+                        len=LengthType(
+                            octets=[
+                                LengthTypeOctet(
+                                    num=8,
+                                    islong=0
+                                )
+                            ]
+                        ),
+                        universalAptitleId = UniversalObjectIdentifier(
+                            main=0x2b,
+                            sublist=[
+                                ObjectIdentifierNibble(data=0x06),
+                                ObjectIdentifierNibble(data=0x01),
+                                ObjectIdentifierNibble(data=0x04),
+                                ObjectIdentifierNibble(data=0x01),
+                                ObjectIdentifierNibble(data=0x82),
+                                ObjectIdentifierNibble(data=0x85),
+                                ObjectIdentifierNibble(data=0x63),
+                            ]
+                        )
+                    )
+                ),
+                IdentFeature(
+                    tag=0x05,
+                    sessionCtrl=IdentSessionCtrl(
+                        sessionCtrl=0x8
+                    )
+                ),
+                IdentFeature(
+                    tag=0x06,
+                    deviceClass=ID(
+                        tag=IdentifierTags.UNIVERSAL.value,
+                        len=LengthType(
+                            octets=[
+                                LengthTypeOctet(
+                                    num=8,
+                                    islong=0
+                                )
+                            ]
+                        ),
+                        universalAptitleId = UniversalObjectIdentifier(
+                            main=0x2b,
+                            sublist=[
+                                ObjectIdentifierNibble(data=0x06),
+                                ObjectIdentifierNibble(data=0x01),
+                                ObjectIdentifierNibble(data=0x04),
+                                ObjectIdentifierNibble(data=0x01),
+                                ObjectIdentifierNibble(data=0x82),
+                                ObjectIdentifierNibble(data=0x85),
+                                ObjectIdentifierNibble(data=0x63),
+                            ]
+                        )
+                    )
+                ),
+                IdentFeature(
+                    tag=0x07,
+                    deviceIdentity=IdentDeviceIdentity(
+                        len=11,
+                        format=0x01,
+                        identification=0x000102030A040D050607
+                    )
                 )
             ],
-            eol=0
+            eol=0x00
         )
     )
 )

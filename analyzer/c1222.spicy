@@ -562,7 +562,18 @@ type ResponseOkIdent = unit {
     ver         : uint8;
     rev         : uint8;
     features    : IdentFeature[] &until=0x00;
-    eol         : uint8;
+    #on std{
+    #    print "std:%d" % $$;
+    #}
+    #n ver{
+    #    print "ver:%d" % $$;
+    #}
+    #on rev{
+    #    print "rev:%d" % $$;
+    #}
+    #on features foreach{
+    #    print "feature:%d" % $$;
+    #}
 };
 
 #- 5.3.2.4.1 Identification Service <feature> Pg. 22 ---------------------------
@@ -570,6 +581,7 @@ type IdentFeature = unit {
     tag : uint8 &convert=C1222_ENUMS::IdentFeatureTags($$);
 
     switch(self.tag){
+        C1222_ENUMS::IdentFeatureTags::EOL                   ->                      : void;
         C1222_ENUMS::IdentFeatureTags::SECURITY_MECHANISM    -> securityMechanism    : ID;
         C1222_ENUMS::IdentFeatureTags::SESSION_CTRL          -> sessionCtrl          : IdentSessionCtrl; 
         C1222_ENUMS::IdentFeatureTags::DEVICE_CLASS          -> deviceClass          : ID;

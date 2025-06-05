@@ -12,4 +12,4 @@
 # @TEST-EXEC: btest-diff c1222_authentication_value.log
 # @TEST-EXEC: btest-diff c1222_user_information.log
 #
-# @TEST-DOC: Test rocplus analyzer with c1222overIPv4.cap
+# @TEST-DOC: Test C12.22 analyzer with c1222overIPv4.cap

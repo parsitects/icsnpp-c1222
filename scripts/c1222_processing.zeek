@@ -382,6 +382,8 @@ event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::Re
     for (i,feature in ident$features){
         local feature_tag = feature$tag;
         switch feature_tag {
+            case C1222_ENUMS::IdentFeatureTags_EOL:
+                break;
             case C1222_ENUMS::IdentFeatureTags_SECURITY_MECHANISM:
                 ident_log$security_mechanism = getIdString(feature$securityMechanism);
                 break;

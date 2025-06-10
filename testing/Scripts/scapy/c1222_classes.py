@@ -150,7 +150,7 @@ class SecurityReq(Packet):
     name = "Security Req"
     fields_desc = [
         NBytesField("password", None, 20),
-        ShortField("userid", None),
+        #ShortField("userid", None),
     ]
 
 class WaitReq(Packet):

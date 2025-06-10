@@ -439,7 +439,10 @@ event C1222::SecurityReq(c: connection, is_orig: bool, req: Zeek_C1222::Security
     logon_log$req_resp = "Req";
     logon_log$service_type = "Security";
     logon_log$password = req$password;
-    logon_log$user_id = req$userid;
+
+    if (req?$userid) {
+        logon_log$user_id = req$userid;
+    }
 }
 
 # READ / WRITE SERVICE EVENTS -------------------------------------------------------------

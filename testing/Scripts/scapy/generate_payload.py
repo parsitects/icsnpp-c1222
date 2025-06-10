@@ -159,7 +159,7 @@ if "__main__" == __name__:
     parser.add_argument('--dst-port', type=int, help='Destination port (default: 1153)')
     parser.add_argument('--comprehensive', '--all', action='store_true', help='Generate a comprehensive PCAP')
     parser.add_argument('--protocol', choices=['tcp', 'udp'], default='tcp', help='Protocol to use (default: tcp)')
-    parser.add_argument('--type', choices=['rw_service','ident_service', 'trace_service', 'logon_service', 'wait_service', 'reg_service', 'resolve_service', 'service_error'], default='rw_service', help='The type of packet to generate.')
+    parser.add_argument('--type', choices=['rw_service','ident_service', 'trace_service', 'logon_service', 'wait_service', 'reg_service', 'resolve_service', 'service_error', 'security_service'], default='rw_service', help='The type of packet to generate.')
     args = parser.parse_args()
 
     if args.debug:
@@ -261,6 +261,16 @@ if "__main__" == __name__:
         packets.extend([
             builder.create_packet(createMessageFromService(ident_service_req, "req"), False),
             builder.create_packet(createMessageFromService(service_error_resp, "resp"), True)
+        ])
+
+        builder.build_pcap(packets, output_file)
+    elif (args.type == "security_service"):
+        packets = []
+        if args.protocol == 'tcp':
+            packets.extend(builder._create_handshake_packets())
+        packets.extend([
+            builder.create_packet(createMessageFromService(security_service_req, "req"), False),
+            builder.create_packet(createMessageFromService(security_service_resp, "resp"), True)
         ])
 
         builder.build_pcap(packets, output_file)

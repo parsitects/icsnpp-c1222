@@ -5,7 +5,6 @@ security_service_req=Service(
     serviceTag=RequestResponseCodes.SECURITY.value,
     security=SecurityReq(
         password=0x70617373776F726431323334,
-        userid=1234,
     )
 )
 

@@ -1,6 +1,6 @@
 module C1222;
 
-# Copyright 2024 Battelle Energy Alliance, LLC
+# Copyright 2025 Battelle Energy Alliance, LLC
 
 ################################################################################
 ##
@@ -11,7 +11,7 @@ module C1222;
 ## (LAN/WAN) Node Communication Protocol to Complement the Utility Industry 
 ## End Device Data Tables.
 ##
-## Payton Harmon, Idaho National Lab,  2024
+## Payton Harmon & Hans Peterson, Idaho National Lab, June 2025
 ##
 ################################################################################
 
@@ -54,15 +54,12 @@ public global sessionContext: uint8;
 
 #- Top Level Message -----------------------------------------------------------
 public type Message = unit {
-    var success : bool = True;
 
-    : AscePdu[] foreach {
-        print commandContext;
-    }
+    : AscePdu[];
 
-    on %error(msg: string){
-        print "ERROR: %s" % msg;
-    }
+    #on %error(msg: string){
+    #    print "ERROR: %s" % msg;
+    #}
 
 };
 

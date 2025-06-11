@@ -1,5 +1,20 @@
 @load base/protocols/conn/removal-hooks
 
+# Copyright 2025 Battelle Energy Alliance, LLC
+
+################################################################################
+##
+## ICSNPP - ANS1 C12.22
+## 
+## This file defines the ICSNPP ANS1 C12.22 Zeek Script as defined in the specification
+## IEEE Std 1703-2012, IEEE Standard for Local Area Network/Wide Area Network 
+## (LAN/WAN) Node Communication Protocol to Complement the Utility Industry 
+## End Device Data Tables.
+##
+## Payton Harmon & Hans Peterson, Idaho National Lab, June 2025
+##
+################################################################################
+
 module C1222;
 
 export {

@@ -58,23 +58,23 @@ $ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
 
 #### Fields Captured
 
-| Field                     | Type           | Description                                               |
-| --------------------------|----------------|-----------------------------------------------------------| 
-| ts                        | time           | Timestamp (network time)                                  |
-| uid                       | string         | Unique ID for this connection                             |
-| id                        | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto                     | string         | Transport protocol                                        |
-| elements                  | set<string>    | List of the ASCE Elements utilized in the packet          |
-| is_encrypted_epsem        | bool           | Flag denoting if the EPSEM data is encrypted              |
-| services                  | set<string>    | List of epsem services in the packet                      |
-| aso_context               | string         | Application context universal identifier                  |
-| called_ap_title           | string         | Unique identifier of message target                       |
-| calling_ap_title          | string         | Unique identifier of message initiator                    |
-| calling_ae_qualifier      | set<string>    | Qualifies data being sent                                 |
-| mechanism name            | string         | Unique security mechanism identifier                      |
-| calling_auth_value        | string         | Authenticatin mechanism used                              |
-| called_ap_invocation_id   | string         | Called AP invocation identifier                           |
-| calling_ap_invocation_id  | string         | Calling AP invocation identifier                          |
+| Field                     | Type              | Description                                               |
+| --------------------------|-------------------|-----------------------------------------------------------| 
+| ts                        | time              | Timestamp (network time)                                  |
+| uid                       | string            | Unique ID for this connection                             |
+| id                        | conn_id           | Default Zeek connection info (IP addresses, ports)        |
+| proto                     | string            | Transport protocol                                        |
+| elements                  | vector of string  | List of the ASCE Elements utilized in the packet          |
+| is_encrypted_epsem        | bool              | Flag denoting if the EPSEM data is encrypted              |
+| services                  | vector of string  | List of epsem services in the packet                      |
+| aso_context               | string            | Application context universal identifier                  |
+| called_ap_title           | string            | Unique identifier of message target                       |
+| calling_ap_title          | string            | Unique identifier of message initiator                    |
+| calling_ae_qualifier      | vector of string  | Qualifies data being sent                                 |
+| mechanism name            | string            | Unique security mechanism identifier                      |
+| calling_auth_value        | string            | Authenticatin mechanism used                              |
+| called_ap_invocation_id   | string            | Called AP invocation identifier                           |
+| calling_ap_invocation_id  | string            | Calling AP invocation identifier                          |
 
 * The **`calling_ae_qualifer`** field is comprised of four non-exclusive qualifiers:
     - `TEST` - test message
@@ -94,17 +94,32 @@ default. Users can enable it by appending `C1222::log_user_information=F` to the
 
 #### Fields Captured
 
-| Field             | Type           | Description                                               |
-| ----------------- |----------------|-----------------------------------------------------------|
-| ts                | time           | Timestamp (network time)                                  |
-| uid               | string         | Unique ID for this connection                             |
-| id                | conn_id        | Default Zeek connection info (IP addresses, ports)        |
-| proto             | string         | Transport protocol                                        |
-| frame_type        | string         | Frame type from synchrophasor frame synchronization word  |
-| frame_size        | count          | Frame size (in bytes)                                     |
-| header_time_stamp | time           | Timestamp from frame header                               |
-| command           | string         | String representation of the command                      |
-| data              | string         | Human-readable header data (user-defined)                 |
+| Field                         | Type              | Description                                               |
+| ------------------------------|-------------------|-----------------------------------------------------------|
+| ts                            | time              | Timestamp (network time)                                  |
+| uid                           | string            | Unique ID for this connection                             |
+| id                            | conn_id           | Default Zeek connection info (IP addresses, ports)        |
+| proto                         | string            | Transport protocol                                        |
+| indirect_reference_encoding   | int               | Identifies encoding used to decipher user-information     |
+| padding                       | string            | Padding for segmentation and encryption                   |
+| mac                           | string            | Encryption message authentication code                    |
+| epsem_control                 | vector of string  | Datagram control field                                    |
+| ed_class                      | string            | Transport protocol                                        |
+| encrypted_epsem               | string            | Is the epsem encrypted                                    |
+| services                      | vector of string  | EPSEM services sent in packet                             |
+
+* The **`epsem_control`** field identifies the epsem datagram control field:
+    - `RECOVERY_SESSION` - Used to initate session where response is not subject to restrictions of message accepted window or playback rejection.
+    - `PROXY_SERVICE_USED` -  Determines if message was sent through a proxy.
+    - `ED_CLASS_INCLUDED` - ed-class field is included in the ASCE pdu
+    - `SECURITY_MODE_CLEARTEXT` - EPSEM datagram transmitted in cleartext.
+    - `SECURITY_MODE_CLEARTEXT_WITH_AUTHENTICATION` - EPSEM datagram transmitted in cleartext with authentication.
+    - `SECURITY_MODE_CIPHERTEXT_WITH_AUTHENTICATION` - EPSEM datagram transmitted in ciphertext with authentication.
+    - `RESPONSE_CONTROL_ALWAYS_RESPOND` - Used by request message to always receive a response.
+    - `RESPONSE_CONTROL_RESPOND_ON_EXCEPTION` - Used by request message to only receive a response on exception.
+    - `RESPONSE_CONTROL_NEVER_RESPOND` - Used by request message to never receive a response.
+
+
 
 ### Authentication Value Log (c1222_authentication_value.log)
 

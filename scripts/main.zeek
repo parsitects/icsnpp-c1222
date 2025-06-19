@@ -65,7 +65,7 @@ redef record connection += {
     c1222_user_information_log: user_information_log &optional;
     c1222_identification_service_log: identification_service_log &optional;
     c1222_read_write_service_log: read_write_service_log &optional;
-    c1222_logon_service_log: logon_service_log &optional;
+    c1222_logon_security_service_log: logon_service_log &optional;
     c1222_wait_service_log: wait_service_log &optional;
     c1222_dereg_reg_service_log: dereg_reg_service_log &optional;
     c1222_resolve_service_log: resolve_service_log &optional;
@@ -116,7 +116,7 @@ event zeek_init() &priority=5 {
     Log::create_stream(C1222::LOG_LOGON_SERVICE_LOG, 
 						[$columns=logon_service_log, 
 						$ev=log_logon_service_log, 
-						$path="c1222_logon_service", 
+						$path="c1222_logon_security_service", 
 						$policy=log_policy_logon_service_log]);
 
     Log::create_stream(C1222::LOG_WAIT_SERVICE_LOG, 
@@ -205,11 +205,11 @@ function emit_c1222_read_write_service_log(c: connection) {
     delete c$c1222_read_write_service_log;
 }
 
-function emit_c1222_logon_service_log(c: connection) {
-    if (! c?$c1222_logon_service_log )
+function emit_c1222_logon_security_service_log(c: connection) {
+    if (! c?$c1222_logon_security_service_log )
         return;
-    Log::write(C1222::LOG_LOGON_SERVICE_LOG, c$c1222_logon_service_log);
-    delete c$c1222_logon_service_log;
+    Log::write(C1222::LOG_LOGON_SERVICE_LOG, c$c1222_logon_security_service_log);
+    delete c$c1222_logon_security_service_log;
 }
 
 function emit_c1222_wait_service_log(c: connection) {

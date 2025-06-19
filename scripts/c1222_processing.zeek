@@ -57,8 +57,8 @@ hook set_dereg_reg_service_log(c: connection) {
 }
 
 hook set_logon_service_log(c: connection) {
-    if (! c?$c1222_logon_service_log)
-        c$c1222_logon_service_log = logon_service_log(
+    if (! c?$c1222_logon_security_service_log)
+        c$c1222_logon_security_service_log = logon_service_log(
             $ts=network_time(),
             $uid=c$uid,
             $id=c$id,
@@ -413,7 +413,7 @@ event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::Re
 event C1222::LogonReq(c: connection, is_orig: bool, req: Zeek_C1222::LogonReq) {
     hook set_logon_service_log(c);
 
-    local logon_log = c$c1222_logon_service_log;
+    local logon_log = c$c1222_logon_security_service_log;
     logon_log$req_resp = "Req";
     logon_log$service_type = "Logon";
     logon_log$user_id = req$userid;
@@ -425,7 +425,7 @@ event C1222::LogonReq(c: connection, is_orig: bool, req: Zeek_C1222::LogonReq) {
 event C1222::LogonResp(c: connection, is_orig: bool, resp: Zeek_C1222::LogonResp) {
     hook set_logon_service_log(c);
 
-    local logon_log = c$c1222_logon_service_log;
+    local logon_log = c$c1222_logon_security_service_log;
     logon_log$req_resp = "Resp";
     logon_log$service_type = "Logon";
     logon_log$session_idle_timeout = resp$respSessionTimeout;
@@ -435,7 +435,7 @@ event C1222::LogonResp(c: connection, is_orig: bool, resp: Zeek_C1222::LogonResp
 event C1222::SecurityReq(c: connection, is_orig: bool, req: Zeek_C1222::SecurityReq) {
     hook set_logon_service_log(c);
 
-    local logon_log = c$c1222_logon_service_log;
+    local logon_log = c$c1222_logon_security_service_log;
     logon_log$req_resp = "Req";
     logon_log$service_type = "Security";
     logon_log$password = req$password;
@@ -868,7 +868,7 @@ event C1222::ResponseOk(c: connection, is_orig: bool, resp: Zeek_C1222::Response
     else if (resp$command == C1222_ENUMS::RequestResponseCodes_SECURITY) {
         hook set_logon_service_log(c);
 
-        local logon_log = c$c1222_logon_service_log;
+        local logon_log = c$c1222_logon_security_service_log;
         logon_log$req_resp = "Resp";
         logon_log$service_type = "Security";
     }
@@ -883,7 +883,7 @@ event C1222::EndService(c: connection, is_orig: bool){
         C1222::emit_c1222_read_write_service_log(c);
     }
     if(log_logon_service == T){
-        C1222::emit_c1222_logon_service_log(c);
+        C1222::emit_c1222_logon_security_service_log(c);
     }
     if(log_wait_service == T){
         C1222::emit_c1222_wait_service_log(c);

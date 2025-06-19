@@ -72,12 +72,12 @@ $ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
 | called_ap_title           | string           | Unique identifier of message target                |
 | calling_ap_title          | string           | Unique identifier of message initiator             |
 | calling_ae_qualifier      | vector of string | Qualifies data being sent                          |
-| mechanism name            | string           | Unique security mechanism identifier               |
+| mechanism_name            | string           | Unique security mechanism identifier               |
 | calling_auth_value        | string           | Authenticatin mechanism used                       |
 | called_ap_invocation_id   | string           | Called AP invocation identifier                    |
 | calling_ap_invocation_id  | string           | Calling AP invocation identifier                   |
 
-* The **`calling_ae_qualifer`** field is comprised of four non-exclusive qualifiers:
+* The **`calling_ae_qualifier`** field is comprised of four non-exclusive qualifiers:
     - `TEST` - test message
     - `URGENT` - high priority message
     - `NOTIFICATION` - write services issued as a notification
@@ -356,7 +356,6 @@ disable it by appending `C1222::log_service_error=F` to the `zeek` command on th
 | uid                       | string           | Unique ID for this connection                                            |
 | id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
 | proto                     | string           | Transport protocol                                                       |
-| req_resp                  | string           | Request/Response                                                         |
 | service                   | string           | Related Service Request Type generating the Error                        |
 | error_code                | string           | Error type generated                                                     |
 | rqtl_max_request_size     | int              | Request too large max request size                                       |
@@ -404,13 +403,11 @@ Updates to Zeek ICS Protocol Parsers:
 ### Other Software
 Idaho National Laboratory is a national research facility with a focus on development of software and toolchains to improve the security of criticial infrastructure environments around the world. Please review our other software and scientific offerings at:
 
-[Primary Technology Offerings Page](https://www.inl.gov/inl-initiatives/technology-deployment)
+[Primary Technology Overview Page](https://www.inl.gov/science-technology-overview)
 
 [Supported Open Source Software](https://github.com/idaholab)
 
 [Raw Experiment Open Source Software](https://github.com/IdahoLabResearch)
-
-[Unsupported Open Source Software](https://github.com/IdahoLabCuttingBoard)
 
 ### License
 

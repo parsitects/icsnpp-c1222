@@ -1,29 +1,30 @@
 # ICSNPP-C12.22
 
-Industrial Control Systems Network Protocol Parsers (ICSNPP) - ANSI C12.22 for  over TCP and UDP.
+Industrial Control Systems Network Protocol Parsers (ICSNPP) - ANSI C12.22 traffic over TCP and UDP.
 
 ## Overview
 
 ICSNPP-C12.22 is a Zeek plugin (written in [Spicy](https://docs.zeek.org/projects/spicy/en/latest/)) for parsing and logging fields used by the ANSI C12.22 protocol as presented in IEEE standard 1703-2012, defining a transmission format for utility end device data tables or control elements.
 
-This parser produces the following log files, defined in [analyzer/main.zeek](analyzer/main.zeek):
+This parser produces the following log files, defined in [scripts/main.zeek](scripts/main.zeek):
 
 By Default:
 * `c1222.log`
 * `c1222_user_information.log`
+* `c1222_service_error.log`
 
 Optional:
 * `c1222_authentication_value.log`
 * `c1222_identification_service.log`
 * `c1222_read_write_service.log`
-* `c1222_logon_service.log`
+* `c1222_logon_security_service.log`
 * `c1222_wait_service.log`
 * `c1222_dereg_reg_service.log`
 * `c1222_resolve_service.log`
 * `c1222_trace_service.log`
-* `c1222_service_error.log`
 
 For additional information on this log file, see the *Logging Capabilities* section below.
+Note that even the default logs have optional toggles to disable them - they are just enabled by default.
 
 ## Installation
 
@@ -37,7 +38,7 @@ $ zkg install icsnpp-c1222
 ```
 
 
-If this package is installed from ZKG, it will be added to the available plugins. This can be tested by running `zeek -NN`. If installed correctly, users will see `ANALYZER_SPICY_C1222_TCP` and `ANALYZER_SPICY_C1222_UDP` under the list of `Zeek::Spicy` analyzers.
+If this package is installed from ZKG, it will be added to the available plugins. This can be tested by running `zeek -NN`. If installed correctly, users will see `ANALYZER_C1222_TCP` and `ANALYZER_C1222_UDP` under the list of `Zeek::Spicy` analyzers.
 
 If users have ZKG configured to load packages (see `@load packages` in the [ZKG Quickstart Guide](https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html)), this plugin and these scripts will automatically be loaded and ready to go.
 
@@ -48,7 +49,7 @@ If users have ZKG configured to load packages (see `@load packages` in the [ZKG 
 #### Overview
 
 This log summarizes, by packet, ANSI C12.22 frames transmitted over 1153/tcp or 1153/udp to `c1222.log`. 
-This log is **enabled** by default. Users can enable it by appending `C1222::log_summary=F` to the `zeek` 
+This log is **enabled** by default. Users can disable it by appending `C1222::log_summary=F` to the `zeek` 
 command on the command line or by adding `redef C1222::log_summary = F;` to the `local.zeek` file.
 The port can be overriden by redefining the `c1222_ports_tcp` and `c1222_ports_udp` variables, respectively, e.g.:
 
@@ -58,25 +59,25 @@ $ zeek -C -r c1222_tcp.pcap local "C1222::c1222_ports_tcp={ 40712/tcp }"
 
 #### Fields Captured
 
-| Field                     | Type              | Description                                               |
-| --------------------------|-------------------|-----------------------------------------------------------| 
-| ts                        | time              | Timestamp (network time)                                  |
-| uid                       | string            | Unique ID for this connection                             |
-| id                        | conn_id           | Default Zeek connection info (IP addresses, ports)        |
-| proto                     | string            | Transport protocol                                        |
-| elements                  | vector of string  | List of the ASCE Elements utilized in the packet          |
-| is_encrypted_epsem        | bool              | Flag denoting if the EPSEM data is encrypted              |
-| services                  | vector of string  | List of epsem services in the packet                      |
-| aso_context               | string            | Application context universal identifier                  |
-| called_ap_title           | string            | Unique identifier of message target                       |
-| calling_ap_title          | string            | Unique identifier of message initiator                    |
-| calling_ae_qualifier      | vector of string  | Qualifies data being sent                                 |
-| mechanism name            | string            | Unique security mechanism identifier                      |
-| calling_auth_value        | string            | Authenticatin mechanism used                              |
-| called_ap_invocation_id   | string            | Called AP invocation identifier                           |
-| calling_ap_invocation_id  | string            | Calling AP invocation identifier                          |
+| Field                     | Type             | Description                                        |
+| --------------------------|------------------|----------------------------------------------------| 
+| ts                        | time             | Timestamp (network time)                           |
+| uid                       | string           | Unique ID for this connection                      |
+| id                        | conn_id          | Default Zeek connection info (IP addresses, ports) |
+| proto                     | string           | Transport protocol                                 |
+| elements                  | vector of string | List of the ASCE Elements utilized in the packet   |
+| is_encrypted_epsem        | bool             | Flag denoting if the EPSEM data is encrypted       |
+| services                  | vector of string | List of epsem services in the packet               |
+| aso_context               | string           | Application context universal identifier           |
+| called_ap_title           | string           | Unique identifier of message target                |
+| calling_ap_title          | string           | Unique identifier of message initiator             |
+| calling_ae_qualifier      | vector of string | Qualifies data being sent                          |
+| mechanism_name            | string           | Unique security mechanism identifier               |
+| calling_auth_value        | string           | Authenticatin mechanism used                       |
+| called_ap_invocation_id   | string           | Called AP invocation identifier                    |
+| calling_ap_invocation_id  | string           | Calling AP invocation identifier                   |
 
-* The **`calling_ae_qualifer`** field is comprised of four non-exclusive qualifiers:
+* The **`calling_ae_qualifier`** field is comprised of four non-exclusive qualifiers:
     - `TEST` - test message
     - `URGENT` - high priority message
     - `NOTIFICATION` - write services issued as a notification
@@ -88,8 +89,8 @@ authentication value can be found in `c1222_authentication_value.log`.
 
 #### Overview
 
-This log summarizes the User Information Element and the EPSEM data. This log is **enabled** by 
-default. Users can enable it by appending `C1222::log_user_information=F` to the `zeek` command on the command line or by adding 
+This log summarizes the User Information Element and the EPSEM data. This log is **enabled** by default.
+Users can disable it by appending `C1222::log_user_information=F` to the `zeek` command on the command line or by adding 
 `redef C1222::log_user_information = F;` to the `local.zeek` file.
 
 #### Fields Captured
@@ -118,8 +119,6 @@ default. Users can enable it by appending `C1222::log_user_information=F` to the
     - `RESPONSE_CONTROL_ALWAYS_RESPOND` - Used by request message to always receive a response.
     - `RESPONSE_CONTROL_RESPOND_ON_EXCEPTION` - Used by request message to only receive a response on exception.
     - `RESPONSE_CONTROL_NEVER_RESPOND` - Used by request message to never receive a response.
-
-
 
 ### Authentication Value Log (c1222_authentication_value.log)
 
@@ -200,7 +199,7 @@ enable it by appending `C1222::log_read_write_service=T` to the `zeek` command o
 | chksum                 | vector of int    | Checksum of each table                                    |
 | octet_count            | int              | Length of Table data requested starting at offset         |
 
-### Logon Service Log (c1222_logon_service.log)
+### Logon Service Log (c1222_logon_security_service.log)
 
 #### Overview
 
@@ -346,7 +345,7 @@ enable it by appending `C1222::log_trace_service=T` to the `zeek` command on the
 #### Overview
 
 This log provides details protocol service error. This log is **enabled** by default. Users can 
-enable it by appending `C1222::log_service_error=F` to the `zeek` command on the command line or by adding 
+disable it by appending `C1222::log_service_error=F` to the `zeek` command on the command line or by adding 
 `redef C1222::log_service_error = F;` to the `local.zeek` file.
 
 #### Fields Captured
@@ -357,7 +356,6 @@ enable it by appending `C1222::log_service_error=F` to the `zeek` command on the
 | uid                       | string           | Unique ID for this connection                                            |
 | id                        | conn_id          | Default Zeek connection info (IP addresses, ports)                       |
 | proto                     | string           | Transport protocol                                                       |
-| req_resp                  | string           | Request/Response                                                         |
 | service                   | string           | Related Service Request Type generating the Error                        |
 | error_code                | string           | Error type generated                                                     |
 | rqtl_max_request_size     | int              | Request too large max request size                                       |
@@ -405,13 +403,11 @@ Updates to Zeek ICS Protocol Parsers:
 ### Other Software
 Idaho National Laboratory is a national research facility with a focus on development of software and toolchains to improve the security of criticial infrastructure environments around the world. Please review our other software and scientific offerings at:
 
-[Primary Technology Offerings Page](https://www.inl.gov/inl-initiatives/technology-deployment)
+[Primary Technology Overview Page](https://www.inl.gov/science-technology-overview)
 
 [Supported Open Source Software](https://github.com/idaholab)
 
 [Raw Experiment Open Source Software](https://github.com/IdahoLabResearch)
-
-[Unsupported Open Source Software](https://github.com/IdahoLabCuttingBoard)
 
 ### License
 

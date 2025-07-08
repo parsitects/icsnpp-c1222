@@ -177,7 +177,7 @@ enable it by appending `C1222::log_identification_service=T` to the `zeek` comma
 | version                | int            | Reference Version Number                                  |
 | revision               | int            | Reference Revision Number                                 |
 | security_mechanism     | string         | Universal ID of the security mechanism supported          |
-| nbrSession_supported   | bool           | Node supports session-based communication                 |
+| nbr_session_supported   | bool           | Node supports session-based communication                 |
 | sessionless_supported  | bool           | Supports use of read and write outside of session         |
 | device_class           | string         | Universal device identifier                               |
 | device_identity_format | int            | Device identity encoding format flag                      |

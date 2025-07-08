@@ -82,7 +82,7 @@ export {
         version: int &optional &log;
         revision: int &optional &log;
         security_mechanism: string &optional &log;
-        nbrSession_supported: bool &optional &log;
+        nbr_session_supported: bool &optional &log;
         sessionless_supported: bool &optional &log;
         device_class: string &optional &log;
         device_identity_format: int &optional &log;

@@ -389,10 +389,10 @@ event C1222::ResponseOkIdent(c: connection, is_orig: bool, ident: Zeek_C1222::Re
                 break;
             case C1222_ENUMS::IdentFeatureTags_SESSION_CTRL:
                 if(feature$sessionCtrl$sessionCtrl$nbrSessionSupported == 0){
-                    ident_log$nbrSession_supported = F;
+                    ident_log$nbr_session_supported = F;
                 }
                 else{
-                    ident_log$nbrSession_supported = T;
+                    ident_log$nbr_session_supported = T;
                 }
                 ident_log$sessionless_supported = feature$sessionCtrl$sessionCtrl$sessionlessSupported;
                 break;

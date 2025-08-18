@@ -28,6 +28,9 @@ Note that even the default logs have optional toggles to disable them - they are
 
 ## Installation
 
+### Requirements
+* Zeek install >=6.2.0
+
 ### Package Manager
 
 This script is available as a package for [Zeek Package Manager](https://docs.zeek.org/projects/package-manager/en/stable/index.html). Zeek includes Spicy support by default as of [v6.0.0](https://github.com/zeek/zeek/releases/tag/v6.0.0).

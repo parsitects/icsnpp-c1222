@@ -181,7 +181,7 @@ if "__main__" == __name__:
         logger.error("There was no type passed in via --type")
 
     type = args.type
-    pcap_folder = "../../Traces"
+    pcap_folder = "../../traces"
     output_file = args.output or f"{pcap_folder}/c1222_{type}_{protocol_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pcap"
     
     if (args.type == "rw_service"):

@@ -24,7 +24,7 @@ __pycache__/
 build/
 
 # Don't ignore baseline log files
-!testing/Baseline/*/*.log
+!testing/baseline/*/*.log
 
 # Misc
 *stub.spicy
